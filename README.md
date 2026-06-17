@@ -1,12 +1,14 @@
 # Orbit - AI Skill Orchestration Engine
 
+English | [简体中文](README-zh.md)
+
 ```
  ██████╗ ██████╗ ██████╗ ██╗████████╗
 ██╔═══██╗██╔══██╗██╔══██╗██║╚══██╔══╝
-██║   ██║██████╔╝██████╔╝██║   ██║   
-██║   ██║██╔══██╗██╔══██╗██║   ██║   
-╚██████╔╝██║  ██║██████╔╝██║   ██║   
- ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝   ╚═╝   
+██║   ██║██████╔╝██████╔╝██║   ██║
+██║   ██║██╔══██╗██╔══██╗██║   ██║
+╚██████╔╝██║  ██║██████╔╝██║   ██║
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝   ╚═╝
 ```
 
 **Keep your AI development workflow in orbit**
@@ -18,6 +20,7 @@ Complete development lifecycle automation through structured 5-phase workflow wi
 ✅ **v0.1.0 MVP - Complete**
 
 Core workflow implementation:
+
 - ✅ Project structure
 - ✅ Script-based automation
 - ✅ State management with hash tracking
@@ -71,13 +74,13 @@ spec.md         .md         + code              + merge
 
 ### Phase Details
 
-| Phase | Skill | Creates | Key Activities |
-|-------|-------|---------|----------------|
-| **1. Explore** | `/orbit-explore` | `proposal.md`<br>`spec.md` | Requirements conversation<br>Problem/solution exploration<br>Functional specs |
-| **2. Brainstorming** | `/orbit-brainstorming` | `brainstorming.md` | Technical design<br>Architecture diagrams (ASCII)<br>Technology choices |
-| **3. Build** | `/orbit-planning`<br>`/orbit-build` | `plan.md`<br>Code + Tests | Implementation planning<br>Subagent/inline execution<br>TDD approach |
-| **4. Review** | `/orbit-review` | `review.md` | Code quality review<br>Bug detection<br>Pass/fail verification |
-| **5. Archive** | `/orbit-archive` | Archive + Index<br>Merged specs | Move to archive<br>Merge to main specs<br>Clear state |
+| Phase                | Skill                               | Creates                         | Key Activities                                                                |
+| -------------------- | ----------------------------------- | ------------------------------- | ----------------------------------------------------------------------------- |
+| **1. Explore**       | `/orbit-explore`                    | `proposal.md`<br>`spec.md`      | Requirements conversation<br>Problem/solution exploration<br>Functional specs |
+| **2. Brainstorming** | `/orbit-brainstorming`              | `brainstorming.md`              | Technical design<br>Architecture diagrams (ASCII)<br>Technology choices       |
+| **3. Build**         | `/orbit-planning`<br>`/orbit-build` | `plan.md`<br>Code + Tests       | Implementation planning<br>Subagent/inline execution<br>TDD approach          |
+| **4. Review**        | `/orbit-review`                     | `review.md`                     | Code quality review<br>Bug detection<br>Pass/fail verification                |
+| **5. Archive**       | `/orbit-archive`                    | Archive + Index<br>Merged specs | Move to archive<br>Merge to main specs<br>Clear state                         |
 
 ---
 
@@ -198,6 +201,7 @@ skills/
 ```
 
 **Example session:**
+
 ```
 Turn 1: /orbit → Explore → Creates proposal.md + spec.md
 Turn 2: /orbit → Brainstorming → Creates brainstorming.md
@@ -251,25 +255,26 @@ Complete document lineage:
 documents:
   proposal:
     hash: aaa111...
-    
+
   spec:
     hash: bbb222...
     based_on_proposal_hash: aaa111...  ✓
-    
+
   brainstorming:
     hash: ccc333...
     based_on_spec_hash: bbb222...      ✓
-    
+
   plan:
     hash: ddd444...
     based_on_brainstorming_hash: ccc333...  ✓
-    
+
   review:
     hash: eee555...
     based_on_plan_hash: ddd444...      ✓
 ```
 
 **If spec.md changes:**
+
 ```yaml
 spec:
   hash: bbb999...  ← Changed!
@@ -298,29 +303,29 @@ brainstorming:
 
 ## Comparison with Similar Tools
 
-| Dimension | Comet | Orbit |
-|-----------|-------|-------|
-| **Positioning** | OpenSpec + Superpowers | Independent 5-phase workflow |
-| **Dependencies** | External CLIs (openspec, superpowers) | Self-contained skills + scripts |
-| **Invocation** | `/comet`, `/comet-open`, etc. | `/orbit`, `/orbit-explore`, etc. |
-| **Phase 2 Name** | design | brainstorming (exploration focus) |
-| **Automation** | State machine + scripts | State machine + scripts + hash tracking |
-| **Build Strategy** | Superpowers execution | Subagent-driven or inline |
-| **Extensibility** | Monolithic skill | Modular independent skills |
+| Dimension          | Comet                                 | Orbit                                   |
+| ------------------ | ------------------------------------- | --------------------------------------- |
+| **Positioning**    | OpenSpec + Superpowers                | Independent 5-phase workflow            |
+| **Dependencies**   | External CLIs (openspec, superpowers) | Self-contained skills + scripts         |
+| **Invocation**     | `/comet`, `/comet-open`, etc.         | `/orbit`, `/orbit-explore`, etc.        |
+| **Phase 2 Name**   | design                                | brainstorming (exploration focus)       |
+| **Automation**     | State machine + scripts               | State machine + scripts + hash tracking |
+| **Build Strategy** | Superpowers execution                 | Subagent-driven or inline               |
+| **Extensibility**  | Monolithic skill                      | Modular independent skills              |
 
 ---
 
 ## Documentation
 
-- [SCRIPT-INTEGRATION.md](SCRIPT-INTEGRATION.md) - How scripts integrate with skills
-- [REFACTORING-COMPLETE.md](REFACTORING-COMPLETE.md) - Restructuring details
 - [orbit-project-plan.md](orbit-project-plan.md) - Original project plan
+- [CLAUDE.md](CLAUDE.md) - Development guidelines
 
 ---
 
 ## Roadmap
 
 ### ✅ v0.1.0 - MVP (Current)
+
 - ✅ 5-phase workflow skills
 - ✅ Script-based automation
 - ✅ Hash-based document tracking
@@ -328,17 +333,20 @@ brainstorming:
 - ✅ Independent skill invocation
 
 ### v0.2.0 - Enhanced Features
+
 - [ ] Workflow templates (explore-only, build-only)
 - [ ] Hotfix and tweak workflows
 - [ ] Better error recovery
 - [ ] Multi-language support
 
 ### v0.3.0 - Integration
+
 - [ ] Git hooks for commit verification
 - [ ] CI/CD integration
 - [ ] Team collaboration features
 
 ### v1.0.0 - Production Ready
+
 - [ ] Full test coverage
 - [ ] Complete documentation
 - [ ] Performance optimization
@@ -346,36 +354,26 @@ brainstorming:
 
 ---
 
-## Development
+## Installation
 
+1. Clone this repository to your Claude Code skills directory:
 ```bash
-# Install dependencies
-npm install
+cd ~/.claude/skills  # or your custom skills directory
+git clone https://github.com/LeoKon3/orbit.git
+```
 
-# Development mode
-npm run dev
+2. The skills will be automatically detected by Claude Code
 
-# Build
-npm run build
-
-# Format & lint
-npm run format
-npm run lint
+3. Start using:
+```bash
+/orbit
 ```
 
 ---
 
-## License
-
-MIT
-
-## Author
-
-LeoKon3
-
 ## Credits
 
 Inspired by:
-- [Comet](https://github.com/rpamis/comet) - Workflow architecture
+
 - [OpenSpec](https://github.com/Fission-AI/OpenSpec) - Spec lifecycle
 - [Superpowers](https://github.com/obra/superpowers) - Development methodology
