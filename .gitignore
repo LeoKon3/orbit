@@ -7,4 +7,10 @@ dist/
 coverage/
 *.tsbuildinfo
 
-.claude
+.claude/
+
+# KeepM live memory store (plain text, machine-local)
+/.keepm-memory/
+
+# Claude Code local settings (machine-local)
+/.claude/settings.local.json

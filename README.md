@@ -17,7 +17,7 @@ Complete development lifecycle automation through structured 5-phase workflow wi
 
 ## Status
 
-✅ **v0.1.0 MVP - Complete**
+✅ **v0.2.0 CLI - Complete**
 
 Core workflow implementation:
 
@@ -27,6 +27,80 @@ Core workflow implementation:
 - ✅ 5-phase workflow skills
 - ✅ Sync detection and recovery
 - ✅ Independent skill invocation
+
+## Installation
+
+Install Orbit globally:
+
+```bash
+npm install -g @leokon3/orbit@latest
+```
+
+Then navigate to your project directory and initialize:
+
+```bash
+cd your-project
+orbit init
+```
+
+The initializer asks two questions:
+
+1. Which agent you use:
+   - Claude Code
+   - Codex
+2. Where to install Orbit:
+   - Local project
+   - Global user
+
+| Agent | Local project | Global user |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+| Codex | `.agents/skills/` | `~/.agents/skills/` |
+
+### CLI Commands
+
+```bash
+orbit init       # Install Orbit skills
+orbit update     # Update installed Orbit skills
+orbit uninstall  # Remove Orbit skills
+orbit -version   # Show Orbit version
+```
+
+### Manual Installation
+
+If you do not want to install the global CLI, clone this repository and copy the skills to your target directory.
+
+#### Claude Code
+
+```bash
+# Local project
+mkdir -p .claude/skills
+cp -r skills/* .claude/skills/
+
+# Global user
+mkdir -p ~/.claude/skills
+cp -r skills/* ~/.claude/skills/
+```
+
+#### Codex
+
+```bash
+# Local project
+mkdir -p .agents/skills
+cp -r skills/* .agents/skills/
+
+# Global user
+mkdir -p ~/.agents/skills
+cp -r skills/* ~/.agents/skills/
+```
+
+After installation, start using Orbit:
+
+```bash
+/orbit
+```
+
+---
 
 ## Quick Start
 
@@ -351,23 +425,6 @@ brainstorming:
 - [ ] Complete documentation
 - [ ] Performance optimization
 - [ ] Community promotion
-
----
-
-## Installation
-
-1. Clone this repository to your Claude Code skills directory:
-```bash
-cd ~/.claude/skills  # or your custom skills directory
-git clone https://github.com/LeoKon3/orbit.git
-```
-
-2. The skills will be automatically detected by Claude Code
-
-3. Start using:
-```bash
-/orbit
-```
 
 ---
 

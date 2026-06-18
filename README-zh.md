@@ -17,7 +17,7 @@
 
 ## 状态
 
-✅ **v0.1.0 MVP - 完成**
+✅ **v0.2.0 CLI - 完成**
 
 核心工作流实现：
 
@@ -27,6 +27,80 @@
 - ✅ 5 阶段工作流技能
 - ✅ 同步检测和恢复
 - ✅ 独立技能调用
+
+## 安装
+
+全局安装 Orbit：
+
+```bash
+npm install -g @leokon3/orbit@latest
+```
+
+进入你的项目目录并初始化：
+
+```bash
+cd your-project
+orbit init
+```
+
+初始化器会询问两个问题：
+
+1. 你使用哪个 Agent：
+   - Claude Code
+   - Codex
+2. 安装到哪里：
+   - 当前项目
+   - 用户全局
+
+| Agent | 当前项目 | 用户全局 |
+| --- | --- | --- |
+| Claude Code | `.claude/skills/` | `~/.claude/skills/` |
+| Codex | `.agents/skills/` | `~/.agents/skills/` |
+
+### CLI 命令
+
+```bash
+orbit init       # 安装 Orbit skills
+orbit update     # 更新已安装的 Orbit skills
+orbit uninstall  # 卸载 Orbit skills
+orbit -version   # 查看 Orbit 版本
+```
+
+### 手动安装
+
+如果你不想安装全局 CLI，也可以克隆本仓库后，将 skills 复制到目标目录。
+
+#### Claude Code
+
+```bash
+# 当前项目
+mkdir -p .claude/skills
+cp -r skills/* .claude/skills/
+
+# 用户全局
+mkdir -p ~/.claude/skills
+cp -r skills/* ~/.claude/skills/
+```
+
+#### Codex
+
+```bash
+# 当前项目
+mkdir -p .agents/skills
+cp -r skills/* .agents/skills/
+
+# 用户全局
+mkdir -p ~/.agents/skills
+cp -r skills/* ~/.agents/skills/
+```
+
+安装完成后，开始使用 Orbit：
+
+```bash
+/orbit
+```
+
+---
 
 ## 快速开始
 
@@ -352,23 +426,6 @@ brainstorming:
 - [ ] 完整的文档
 - [ ] 性能优化
 - [ ] 社区推广
-
----
-
-## 安装
-
-1. 将此仓库克隆到您的 Claude Code 技能目录：
-```bash
-cd ~/.claude/skills  # 或您的自定义技能目录
-git clone https://github.com/LeoKon3/orbit.git
-```
-
-2. Claude Code 将自动检测这些技能
-
-3. 开始使用：
-```bash
-/orbit
-```
 
 ---
 
