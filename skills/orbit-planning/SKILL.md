@@ -1,7 +1,6 @@
 ---
 name: orbit-planning
 description: Use when you have a spec or requirements for a multi-step task, before touching code
-source: Adapted from Superpowers writing-plans (MIT License)
 license: MIT
 ---
 
@@ -13,11 +12,11 @@ Write comprehensive implementation plans assuming the engineer has zero context 
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
-**Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
+**Announce at start:** "I'm using the orbit-planning skill to create the implementation plan."
 
-**Context:** If working in an isolated worktree, it should have been created via the `orbit-git-worktrees` skill at execution time.
+**Context:** If working in an isolated worktree, it should already exist before execution starts.
 
-**Save plans to:** `.orbit/changes/<name>/YYYY-MM-DD-<feature-name>.md`
+**Save plans to:** `.orbit/changes/<name>/plan.md`
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -162,7 +161,7 @@ After saving the plan, update the state:
 ```bash
 CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 
-# Update plan hash (will link to design hash)
+# Update plan hash (will link to brainstorming hash)
 bash skills/orbit/scripts/orbit-update-hash.sh plan .orbit/changes/$CHANGE_NAME/plan.md
 ```
 
@@ -172,11 +171,11 @@ This ensures the plan is tracked with proper hash lineage.
 
 After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `.orbit/changes/<name>/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `.orbit/changes/<name>/plan.md`. Two execution options:**
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
+**2. Inline Execution** - Execute tasks in this session using orbit-executing, batch execution with checkpoints
 
 **Which approach?"**
 

@@ -1,7 +1,6 @@
 ---
 name: orbit-executing
 description: Use when orbit-build selects inline execution for a small or tightly coupled implementation plan
-source: Adapted from Superpowers executing-plans (MIT License)
 license: MIT
 ---
 

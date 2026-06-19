@@ -1,7 +1,6 @@
 ---
 name: orbit-tdd
 description: Use when implementing any feature or bugfix, before writing implementation code
-source: Adapted from Superpowers test-driven-development (MIT License)
 license: MIT
 ---
 

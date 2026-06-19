@@ -208,8 +208,8 @@ sed -i 's/^phase:.*/phase: brainstorming/' .orbit/state.yaml
 **Verify phase guard before transitioning:**
 
 ```bash
-# Check if can move to design
-bash skills/orbit/scripts/orbit-phase-guard.sh design
+# Check if can move to brainstorming
+bash skills/orbit/scripts/orbit-phase-guard.sh brainstorming
 # Exit 0 = can proceed, Exit 1 = missing prerequisites
 ```
 
@@ -269,7 +269,7 @@ When relevant, read existing code to understand:
 **After this skill completes:**
 - State file exists at `.orbit/state.yaml`
 - Change structure exists at `.orbit/changes/<name>/`
-- Phase is set to `design`
+- Phase is set to `brainstorming`
 - Ready for `/orbit-brainstorming`
 
 **Required for this skill:**

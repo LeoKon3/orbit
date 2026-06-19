@@ -6,7 +6,7 @@ license: MIT
 
 # Document Synchronization
 
-Handle spec changes that happen during the build phase. When requirements evolve mid-implementation, sync design and plan to stay consistent.
+Handle spec changes that happen during the build phase. When requirements evolve mid-implementation, sync brainstorming and plan to stay consistent.
 
 **Announce at start:** "I'm using orbit-sync to synchronize documents after spec changes."
 
@@ -16,7 +16,7 @@ Handle spec changes that happen during the build phase. When requirements evolve
 
 This skill is invoked when:
 - During build phase, spec.md gets updated
-- Design or plan may be outdated
+- Brainstorming or plan may be outdated
 - Need to ensure all documents are consistent
 
 **Typical scenario:**
@@ -75,7 +75,7 @@ CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 - Scope changed?
 
 **Assess impact:**
-- Does design need updates? (architecture, approach, decisions)
+- Does brainstorming need updates? (architecture, approach, decisions)
 - Does plan need updates? (tasks, file structure, implementation steps)
 
 ### Step 4: Present Impact Analysis
@@ -86,20 +86,20 @@ CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 **What changed in spec:**
 - [List specific changes]
 
-**Impact on design:**
-- [What parts of design need updating]
+**Impact on brainstorming:**
+- [What parts of brainstorming need updating]
 
 **Impact on plan:**
 - [What parts of plan need updating]
 
 **Recommended action:**
-- Update design: [specific sections]
+- Update brainstorming: [specific sections]
 - Update plan: [specific tasks]
 ```
 
-Ask user: "Should I update design and plan to match the new spec?"
+Ask user: "Should I update brainstorming and plan to match the new spec?"
 
-### Step 5: Update Design (if needed)
+### Step 5: Update Brainstorming (if needed)
 
 Read brainstorming.md and make targeted updates:
 
@@ -109,10 +109,10 @@ Read brainstorming.md and make targeted updates:
 ## Example: New requirement needs new component
 
 ### [New Section]
-[Design for new requirement]
+[Brainstorming update for new requirement]
 
 ### [Existing Section - Updated]
-[Modified design to accommodate change]
+[Modified brainstorming approach to accommodate change]
 ```
 
 **Don't rewrite the whole document** - make surgical updates to affected sections.
@@ -148,10 +148,10 @@ Read plan.md and update:
 ```bash
 CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 
-# Update design hash (will link to current spec hash)
-bash skills/orbit/scripts/orbit-update-hash.sh design .orbit/changes/$CHANGE_NAME/brainstorming.md
+# Update brainstorming hash (will link to current spec hash)
+bash skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/$CHANGE_NAME/brainstorming.md
 
-# Update plan hash (will link to current design hash)
+# Update plan hash (will link to current brainstorming hash)
 bash skills/orbit/scripts/orbit-update-hash.sh plan .orbit/changes/$CHANGE_NAME/plan.md
 ```
 
@@ -215,18 +215,18 @@ Show exactly what changed:
 
 ## Edge Cases
 
-### Spec change invalidates design
+### Spec change invalidates brainstorming
 
 If change is fundamental:
 ```
-"This spec change conflicts with the current design approach.
+"This spec change conflicts with the current brainstorming approach.
 
-Current design: [approach]
+Current brainstorming: [approach]
 New requirement: [requirement]
 Conflict: [why they don't work together]
 
-Recommend: Go back to design phase to rework architecture.
-Use /orbit-design to revisit."
+Recommend: Go back to brainstorming phase to rework architecture.
+Use /orbit-brainstorming to revisit."
 ```
 
 ### Spec change invalidates completed work
@@ -244,10 +244,10 @@ Recommend: Add new tasks to address, or mark existing as needs-rework."
 ### Spec shrinks (requirements removed)
 
 ```
-"Spec removed requirements - some design/plan items may be obsolete.
+"Spec removed requirements - some brainstorming/plan items may be obsolete.
 
 Consider:
-- Remove corresponding design sections
+- Remove corresponding brainstorming sections
 - Remove or mark optional in plan
 - Leave if implementation already done (document as 'extra feature')"
 ```
@@ -258,7 +258,7 @@ Consider:
 
 **When to invoke:**
 - User updates spec.md during build phase
-- State shows design/plan as "stale"
+- State shows brainstorming/plan as "stale"
 - Before continuing implementation after spec change
 
 **After this skill:**

@@ -29,14 +29,14 @@ Determines which phase to execute.
 ### 2. Phase Guard (Before phase transition)
 
 ```bash
-# Before entering design phase
-./skills/orbit/scripts/orbit-phase-guard.sh design
+# Before entering brainstorming phase
+./skills/orbit/scripts/orbit-phase-guard.sh brainstorming
 # Exit 0 = can proceed, Exit 1 = missing prerequisites
 ```
 
 Validates:
-- **explore → design**: Requires `proposal.md` and `spec.md`
-- **design → build**: Requires `design.md`
+- **explore → brainstorming**: Requires `proposal.md` and `spec.md`
+- **brainstorming → build**: Requires `brainstorming.md`
 - **build → review**: Requires `plan.md`
 - **review → archive**: Requires `review.md` with PASS status
 
@@ -48,8 +48,8 @@ Validates:
 # After creating spec.md in explore phase
 ./skills/orbit/scripts/orbit-update-hash.sh spec .orbit/changes/my-feature/spec.md
 
-# After creating design.md in design phase
-./skills/orbit/scripts/orbit-update-hash.sh design .orbit/changes/my-feature/design.md
+# After creating brainstorming.md in brainstorming phase
+./skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/my-feature/brainstorming.md
 ```
 
 Updates `.orbit/state.yaml`:
@@ -59,8 +59,8 @@ documents:
     path: .orbit/changes/my-feature/spec.md
     hash: abc123...
     based_on_proposal_hash: xyz789...
-  design:
-    path: .orbit/changes/my-feature/design.md
+  brainstorming:
+    path: .orbit/changes/my-feature/brainstorming.md
     hash: def456...
     based_on_spec_hash: abc123...  # ← Links to parent
 ```
@@ -76,8 +76,8 @@ documents:
 ```
 
 Detects hash mismatches:
-- If `spec.md` changed → `design.md` is stale
-- If `design.md` changed → `plan.md` is stale
+- If `spec.md` changed → `brainstorming.md` is stale
+- If `brainstorming.md` changed → `plan.md` is stale
 - Triggers `/orbit sync` automatically
 
 ---
@@ -110,21 +110,21 @@ User: /orbit
 │  ├─ orbit-update-hash.sh proposal ...
 │  ├─ Create spec.md
 │  ├─ orbit-update-hash.sh spec ...
-│  └─ orbit-phase-guard.sh design ✓
+│  └─ orbit-phase-guard.sh brainstorming ✓
 │
-├─ Design Phase
+├─ Brainstorming Phase
 │  ├─ orbit-sync-detect.sh (checks spec hash)
-│  ├─ Create design.md
-│  ├─ orbit-update-hash.sh design ...
+│  ├─ Create brainstorming.md
+│  ├─ orbit-update-hash.sh brainstorming ...
 │  └─ orbit-phase-guard.sh build ✓
 │
 ├─ Build Phase
-│  ├─ orbit-sync-detect.sh (checks design hash)
+│  ├─ orbit-sync-detect.sh (checks brainstorming hash)
 │  │  → ⚠️ Spec changed! Sync needed
 │  │
 │  ├─ Sync Phase (automatic)
-│  │  ├─ Update design.md surgically
-│  │  ├─ orbit-update-hash.sh design ...
+│  │  ├─ Update brainstorming.md surgically
+│  │  ├─ orbit-update-hash.sh brainstorming ...
 │  │  └─ Update plan.md surgically
 │  │
 │  ├─ Create plan.md

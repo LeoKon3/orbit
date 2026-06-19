@@ -1,7 +1,6 @@
 ---
 name: orbit-review
 description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
-source: Adapted from Superpowers requesting-code-review (MIT License)
 license: MIT
 ---
 
@@ -81,7 +80,7 @@ You: [Fix progress indicators]
 - Catch issues before they compound
 - Fix before moving to next task
 
-**Executing Plans:**
+**orbit-executing:**
 - Review after each task or at natural checkpoints
 - Get feedback, apply, continue
 

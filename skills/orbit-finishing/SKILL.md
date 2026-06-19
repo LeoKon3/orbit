@@ -1,7 +1,6 @@
 ---
 name: orbit-finishing
 description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
-source: Adapted from Superpowers finishing-a-development-branch (MIT License)
 license: MIT
 ---
 
@@ -13,7 +12,7 @@ Guide completion of development work by presenting clear options and handling ch
 
 **Core principle:** Verify tests → Detect environment → Present options → Execute choice → Clean up.
 
-**Announce at start:** "I'm using the finishing-a-development-branch skill to complete this work."
+**Announce at start:** "I'm using the orbit-finishing skill to complete this work."
 
 ## The Process
 
@@ -53,7 +52,7 @@ This determines which menu to show and how cleanup works:
 | State | Menu | Cleanup |
 |-------|------|---------|
 | `GIT_DIR == GIT_COMMON` (normal repo) | Standard 4 options | No worktree to clean up |
-| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Provenance-based (see Step 6) |
+| `GIT_DIR != GIT_COMMON`, named branch | Standard 4 options | Orbit-managed path check (see Step 6) |
 | `GIT_DIR != GIT_COMMON`, detached HEAD | Reduced 3 options (no merge) | No cleanup (externally managed) |
 
 ### Step 3: Determine Base Branch
@@ -172,7 +171,7 @@ WORKTREE_PATH=$(git rev-parse --show-toplevel)
 
 **If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If worktree path is under `.worktrees/` or `worktrees/`:** Superpowers created this worktree — we own cleanup.
+**If worktree path is under `.worktrees/` or `worktrees/`:** Orbit created this worktree — we own cleanup.
 
 ```bash
 MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
@@ -230,7 +229,7 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - Delete work without confirmation
 - Force-push without explicit request
 - Remove a worktree before confirming merge success
-- Clean up worktrees you didn't create (provenance check)
+- Clean up worktrees you didn't create (cleanup ownership check)
 - Run `git worktree remove` from inside the worktree
 
 **Always:**

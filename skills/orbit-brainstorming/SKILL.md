@@ -1,7 +1,6 @@
 ---
 name: orbit-brainstorming
 description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
-source: Adapted from Superpowers brainstorming (MIT License)
 license: MIT
 ---
 
@@ -28,10 +27,10 @@ You MUST create a task for each of these items and complete them in order:
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `.orbit/changes/<name>/YYYY-MM-DD-<topic>-design.md` and commit
+6. **Write brainstorming doc** — save to `.orbit/changes/<name>/brainstorming.md` and commit
 7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
 8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+9. **Transition to implementation** — invoke orbit-planning skill to create implementation plan
 
 ## Process Flow
 
@@ -42,25 +41,25 @@ digraph brainstorming {
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
+    "Write brainstorming doc" [shape=box];
     "Spec self-review\n(fix inline)" [shape=box];
     "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
+    "Invoke orbit-planning skill" [shape=doublecircle];
 
     "Explore project context" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
+    "User approves design?" -> "Write brainstorming doc" [label="yes"];
+    "Write brainstorming doc" -> "Spec self-review\n(fix inline)";
     "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
+    "User reviews spec?" -> "Write brainstorming doc" [label="changes requested"];
+    "User reviews spec?" -> "Invoke orbit-planning skill" [label="approved"];
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+**The terminal state is invoking orbit-planning.** Do NOT invoke any other implementation or design skill. The ONLY skill you invoke after brainstorming is orbit-planning.
 
 ## The Process
 
@@ -105,10 +104,10 @@ digraph brainstorming {
 
 **Documentation:**
 
-- Write the validated design (spec) to `.orbit/changes/<name>/YYYY-MM-DD-<topic>-design.md`
+- Write the validated brainstorming doc to `.orbit/changes/<name>/brainstorming.md`
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
+- Commit the brainstorming document to git
 
 **Spec Self-Review:**
 After writing the spec document, look at it with fresh eyes:
@@ -129,8 +128,8 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 **Implementation:**
 
-- Save design.md to `.orbit/changes/<name>/design.md`
-- Update state with design hash using: `bash skills/orbit/scripts/orbit-update-hash.sh design .orbit/changes/<name>/design.md`
+- Save brainstorming.md to `.orbit/changes/<name>/brainstorming.md`
+- Update state with brainstorming hash using: `bash skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/<name>/brainstorming.md`
 - Transition to build phase: `sed -i 's/^phase:.*/phase: build/' .orbit/state.yaml`
 - Invoke the orbit-planning skill to create a detailed implementation plan
 - Do NOT invoke any other skill. orbit-planning is the next step.
@@ -160,5 +159,4 @@ A browser-based companion for showing mockups, diagrams, and visual options duri
 
 A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
 
-If they agree to the companion, read the detailed guide before proceeding:
-`skills/brainstorming/visual-companion.md`
+If they agree to the companion, follow the visual-companion guidance available in the active brainstorming environment before proceeding.

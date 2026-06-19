@@ -151,7 +151,7 @@ original_name: $CHANGE_NAME
 archive_name: $ARCHIVE_NAME
 phases_completed:
   - explore
-  - design
+  - brainstorming
   - build
   - review
   - archive

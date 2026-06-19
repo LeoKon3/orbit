@@ -51,7 +51,7 @@ if [ -n "$CHANGE" ]; then
   blue "📄 Documents:"
   [ -f "$CHANGE_DIR/proposal.md" ] && green "   ✓ proposal.md" || echo "   ✗ proposal.md"
   [ -f "$CHANGE_DIR/spec.md" ] && green "   ✓ spec.md" || echo "   ✗ spec.md"
-  [ -f "$CHANGE_DIR/design.md" ] && green "   ✓ design.md" || echo "   ✗ design.md"
+  [ -f "$CHANGE_DIR/brainstorming.md" ] && green "   ✓ brainstorming.md" || echo "   ✗ brainstorming.md"
   [ -f "$CHANGE_DIR/plan.md" ] && green "   ✓ plan.md" || echo "   ✗ plan.md"
   [ -f "$CHANGE_DIR/review.md" ] && green "   ✓ review.md" || echo "   ✗ review.md"
 fi

@@ -1,7 +1,6 @@
 ---
 name: orbit-subagent-dev
 description: Use when executing implementation plans with independent tasks in the current session
-source: Adapted from Superpowers subagent-driven-development (MIT License)
 license: MIT
 ---
 
@@ -15,7 +14,7 @@ Execute plan by dispatching a fresh implementer subagent per task, with a task r
 
 **Controller boundary:** You are the Build execution controller, not the implementer for task code. Your job is to coordinate execution, dispatch implementer/reviewer subagents, maintain execution records, and return a Build result to orbit-build. Do not directly implement production task code unless the user explicitly overrides this workflow.
 
-**Orbit skill preference:** When a suitable Orbit skill exists, prefer the Orbit namespaced skill over a generic upstream skill. For example, prefer `orbit-tdd` over `test-driven-development` and prefer `orbit-verify` over a generic `verify`. Generic skills are fallback only when no suitable `orbit-*` skill exists or the Orbit skill is unavailable.
+**Orbit skill preference:** When a suitable Orbit skill exists, prefer the Orbit namespaced skill over a generic upstream skill. For example, use `orbit-tdd` for TDD guidance and `orbit-verify` for verification guidance. Generic skills are fallback only when no suitable `orbit-*` skill exists or the Orbit skill is unavailable.
 
 **Execution artifact root:** Store task briefs, reports, review packages, and progress under the active change directory:
 
@@ -36,21 +35,18 @@ ledger and the tool results carry the record.
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
-    "subagent-driven-development" [shape=box];
-    "executing-plans" [shape=box];
+    "orbit-subagent-dev" [shape=box];
+    "orbit-executing" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
-    "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Tasks mostly independent?" -> "orbit-subagent-dev" [label="yes - use fresh subagents"];
+    "Tasks mostly independent?" -> "orbit-executing" [label="no - inline execution"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
+**vs. orbit-executing (inline execution):**
 - Same session (no context switch)
 - Fresh subagent per task (no context pollution)
 - Review after each task (spec compliance + code quality)
@@ -295,7 +291,7 @@ Task 1: Hook installation script
 
 Implementer: "Before I begin - should the hook be installed at user or system level?"
 
-You: "User level (~/.config/superpowers/hooks/)"
+You: "User level (the user-scoped Orbit config path)."
 
 Implementer: "Got it. Implementing now..."
 [Later] Implementer:
@@ -338,8 +334,13 @@ Task reviewer: Spec ✅. Task quality: Approved.
 ...
 
 [After all tasks]
-[Dispatch final code-reviewer]
-Final reviewer: All requirements met, ready to merge
+[Write or update .orbit/changes/<change-name>/execution/build-summary.md]
+Return final status to orbit-build:
+- COMPLETE, or
+- COMPLETE_WITH_CONCERNS, or
+- BLOCKED
+
+orbit-build reads the execution artifacts, decides whether to advance to review, and owns any next-step workflow actions.
 
 Done!
 ```
@@ -352,7 +353,7 @@ Done!
 - Parallel-safe (subagents don't interfere)
 - Subagent can ask questions (before AND during work)
 
-**vs. Executing Plans:**
+**vs. orbit-executing:**
 - Same session (no handoff)
 - Continuous progress (no waiting)
 - Review checkpoints automatic

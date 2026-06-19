@@ -48,24 +48,24 @@ fi
 # Check brainstorming vs spec
 if [ -f "$CHANGE_DIR/brainstorming.md" ] && [ -f "$CHANGE_DIR/spec.md" ]; then
   CURRENT_SPEC_HASH=$(sha256sum "$CHANGE_DIR/spec.md" | cut -d' ' -f1)
-  DESIGN_BASED_ON=$(get_state_hash "brainstorming" "based_on_spec_hash")
+  BRAINSTORMING_BASED_ON=$(get_state_hash "brainstorming" "based_on_spec_hash")
 
-  if [ -n "$DESIGN_BASED_ON" ] && [ "$CURRENT_SPEC_HASH" != "$DESIGN_BASED_ON" ]; then
+  if [ -n "$BRAINSTORMING_BASED_ON" ] && [ "$CURRENT_SPEC_HASH" != "$BRAINSTORMING_BASED_ON" ]; then
     yellow "⚠️  Spec changed since brainstorming was created"
     echo "   Spec: ${CURRENT_SPEC_HASH:0:12}..."
-    echo "   Design based on: ${DESIGN_BASED_ON:0:12}..."
+    echo "   Brainstorming based on: ${BRAINSTORMING_BASED_ON:0:12}..."
     SYNC_NEEDED=1
   fi
 fi
 
 # Check plan vs brainstorming
 if [ -f "$CHANGE_DIR/plan.md" ] && [ -f "$CHANGE_DIR/brainstorming.md" ]; then
-  CURRENT_DESIGN_HASH=$(sha256sum "$CHANGE_DIR/brainstorming.md" | cut -d' ' -f1)
+  CURRENT_BRAINSTORMING_HASH=$(sha256sum "$CHANGE_DIR/brainstorming.md" | cut -d' ' -f1)
   PLAN_BASED_ON=$(get_state_hash "plan" "based_on_brainstorming_hash")
 
-  if [ -n "$PLAN_BASED_ON" ] && [ "$CURRENT_DESIGN_HASH" != "$PLAN_BASED_ON" ]; then
-    yellow "⚠️  Design changed since plan was created"
-    echo "   Design: ${CURRENT_DESIGN_HASH:0:12}..."
+  if [ -n "$PLAN_BASED_ON" ] && [ "$CURRENT_BRAINSTORMING_HASH" != "$PLAN_BASED_ON" ]; then
+    yellow "⚠️  Brainstorming changed since plan was created"
+    echo "   Brainstorming: ${CURRENT_BRAINSTORMING_HASH:0:12}..."
     echo "   Plan based on: ${PLAN_BASED_ON:0:12}..."
     SYNC_NEEDED=1
   fi
