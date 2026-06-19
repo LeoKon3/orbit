@@ -29,6 +29,22 @@ Explore → Brainstorming → Build → Review → Archive
 
 ---
 
+## Change Types
+
+Orbit tracks any software change, not only new features. The phase order stays the same, but the templates and review emphasis adapt to `change_type`:
+
+| Type | Use For | Phase Weight |
+|------|---------|--------------|
+| `feature` | New user-visible capability | Full Explore, Brainstorming, Planning, Build, Review |
+| `bugfix` | Incorrect existing behavior, errors, timeouts, regressions | Lightweight but complete: reproduce → root cause → fix plan → regression verification |
+| `refactor` | Internal restructuring without intended behavior change | Medium: behavior-preservation constraints and safe migration steps |
+| `docs` | Documentation-only updates, translations, examples | Lightweight: audience, coverage, accuracy, links |
+| `workflow` | Orbit/process/tooling/CLI changes | Medium/strict: state flow, skill references, script/package safety |
+
+`change_type` does **not** skip phases by itself. It controls the questions asked, document templates, plan shape, and review checklist. For `feature`, use the full workflow. For `bugfix`, keep artifacts short but still persistent (`proposal.md`, `spec.md`, `brainstorming.md`, `plan.md`, `review.md`) so work can resume across sessions.
+
+---
+
 ## Phase Detection and Dispatch
 
 When you call `/orbit`, I will:
@@ -36,13 +52,14 @@ When you call `/orbit`, I will:
 ### Step 1: Check Current State
 
 ```bash
-bash skills/orbit/scripts/orbit-check-state.sh
+node skills/orbit/scripts/orbit-check-state.js
 ```
 
 This script outputs:
 - `PHASE=<current-phase>` - Where we are in the workflow
 - `CHANGE=<change-name>` - Current change name
 - `WORKFLOW=<workflow-type>` - full | explore-only | build-only
+- `CHANGE_TYPE=<type>` - feature | bugfix | refactor | docs | workflow
 
 ### Step 2: Dispatch to Phase Skill
 
@@ -62,7 +79,7 @@ Based on the detected phase, automatically invoke the corresponding skill:
 Before entering certain phases, automatically check if documents are stale:
 
 ```bash
-bash skills/orbit/scripts/orbit-sync-detect.sh
+node skills/orbit/scripts/orbit-sync-detect.js
 ```
 
 If any document hash mismatch is detected:
@@ -115,7 +132,7 @@ If any document hash mismatch is detected:
 **Purpose:** Execute the plan
 
 **Dispatches to:**
-- `orbit-subagent-dev` (≥3 tasks) - Parallel subagent execution
+- `orbit-subagent-dev` (≥3 tasks) - Task-by-task subagent execution
 - `orbit-executing` (≤2 tasks) - Sequential inline execution
 
 **Creates:**
@@ -178,6 +195,7 @@ All workflow state is tracked in `.orbit/state.yaml`:
 
 ```yaml
 workflow: full
+change_type: feature
 phase: brainstorming
 current_change: ops-platform
 
@@ -204,6 +222,8 @@ documents:
 ```
 
 **Hash Chain:** Each document links to its parent via hash, ensuring consistency.
+
+**Change Type:** `change_type` is set during Explore and carried through Archive. If absent in an older state file, treat it as `feature` for backward compatibility.
 
 ---
 
@@ -259,11 +279,12 @@ Claude: [directly invokes review skill]
 
 Shared automation scripts in `skills/orbit/scripts/`:
 
-- `orbit-check-state.sh` - Check current phase and change
-- `orbit-phase-guard.sh` - Validate phase transitions
-- `orbit-update-hash.sh` - Update document hashes
-- `orbit-sync-detect.sh` - Detect stale documents
-- `orbit-merge-spec.sh` - Merge specs to main docs
+- `orbit-check-state.js` - Check current phase and change
+- `orbit-phase-guard.js` - Validate phase transitions
+- `orbit-update-hash.js` - Update document hashes
+- `orbit-sync-detect.js` - Detect stale documents
+- `orbit-merge-spec.js` - Merge specs to main docs
+- `orbit-archive-change.js` - Move completed changes to archive and reset state
 
 All phase skills use these scripts for consistency.
 
@@ -296,9 +317,9 @@ All phase skills use these scripts for consistency.
 
 When `/orbit` is called, this skill:
 
-1. **Detects current state** via `orbit-check-state.sh`
-2. **Validates transition** via `orbit-phase-guard.sh` (if needed)
-3. **Checks for sync** via `orbit-sync-detect.sh` (if in build/review)
+1. **Detects current state** via `orbit-check-state.js`
+2. **Validates transition** via `orbit-phase-guard.js` (if needed)
+3. **Checks for sync** via `orbit-sync-detect.js` (if in build/review)
 4. **Invokes phase skill** via Skill tool
 5. **Reports completion** and suggests next step
 

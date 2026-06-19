@@ -70,6 +70,18 @@ You: "Let's think about this...
 - Key constraints or requirements
 - What's in scope vs out of scope
 
+**Classify the change type:** infer the likely `change_type`, then confirm it with the user in the summary.
+
+| change_type | Signals | Explore focus |
+|-------------|---------|---------------|
+| `feature` | add, create, support, new capability | users, goals, workflows, requirements, constraints |
+| `bugfix` | bug, error, broken, timeout, loading forever, regression, wrong behavior | actual vs expected behavior, reproduction steps, logs/errors, affected scope |
+| `refactor` | restructure, split, cleanup, simplify internals without behavior change | behavior to preserve, risk boundaries, test coverage, migration constraints |
+| `docs` | README, docs, guide, translation, examples | audience, coverage, commands/links to verify, language requirements |
+| `workflow` | Orbit, skill, phase, CLI, installer, update/uninstall, process | current process problem, desired agent behavior, compatibility, package safety |
+
+If the type is uncertain, default to `feature` only after explaining the assumption. Lightweight types still use the same phases; they just use shorter, more focused artifacts.
+
 ### Step 3: Summarize Understanding
 
 Present a clear summary:
@@ -88,6 +100,8 @@ Present a clear summary:
 **Success Criteria:**
 - [how we'll know it works]
 
+**Change Type:** [feature | bugfix | refactor | docs | workflow]
+
 Does this capture it?
 ```
 
@@ -97,21 +111,17 @@ Wait for user confirmation before proceeding.
 
 Once confirmed, create the change structure:
 
-```bash
-# Create change directory
-CHANGE_NAME="<name>"
-mkdir -p .orbit/changes/$CHANGE_NAME
+```text
+Create `.orbit/changes/<change-name>/`.
 
-# Initialize state if doesn't exist
-if [ ! -f .orbit/state.yaml ]; then
-  mkdir -p .orbit
-  cat > .orbit/state.yaml << EOF
+Create or update `.orbit/state.yaml` with:
 workflow: full
+change_type: <feature|bugfix|refactor|docs|workflow>
 phase: explore
-current_change: $CHANGE_NAME
-EOF
-fi
+current_change: <change-name>
 ```
+
+If an older state file has no `change_type`, add it while preserving the existing workflow fields.
 
 ### Step 5: Write Proposal
 
@@ -119,6 +129,8 @@ Create `.orbit/changes/<name>/proposal.md`:
 
 ```markdown
 # Proposal: <Change Name>
+
+**Change Type:** <feature|bugfix|refactor|docs|workflow>
 
 ## Problem
 
@@ -152,6 +164,8 @@ Create `.orbit/changes/<name>/spec.md`:
 
 ```markdown
 # Specification: <Change Name>
+
+**Change Type:** <feature|bugfix|refactor|docs|workflow>
 
 ## Overview
 
@@ -193,23 +207,20 @@ Create `.orbit/changes/<name>/spec.md`:
 **Use the hash updater script:**
 
 ```bash
-CHANGE_NAME="<change-name>"
-
 # Update proposal hash
-bash skills/orbit/scripts/orbit-update-hash.sh proposal .orbit/changes/$CHANGE_NAME/proposal.md
+node skills/orbit/scripts/orbit-update-hash.js proposal .orbit/changes/<change-name>/proposal.md
 
 # Update spec hash (will link to proposal hash)
-bash skills/orbit/scripts/orbit-update-hash.sh spec .orbit/changes/$CHANGE_NAME/spec.md
-
-# Transition to brainstorming phase
-sed -i 's/^phase:.*/phase: brainstorming/' .orbit/state.yaml
+node skills/orbit/scripts/orbit-update-hash.js spec .orbit/changes/<change-name>/spec.md
 ```
+
+After the phase guard passes, update `.orbit/state.yaml` by setting `phase: brainstorming`.
 
 **Verify phase guard before transitioning:**
 
 ```bash
 # Check if can move to brainstorming
-bash skills/orbit/scripts/orbit-phase-guard.sh brainstorming
+node skills/orbit/scripts/orbit-phase-guard.js brainstorming
 # Exit 0 = can proceed, Exit 1 = missing prerequisites
 ```
 
@@ -223,6 +234,8 @@ Created change: **<name>**
 **Documents:**
 - Proposal: .orbit/changes/<name>/proposal.md
 - Spec: .orbit/changes/<name>/spec.md
+
+**Change type:** <feature|bugfix|refactor|docs|workflow>
 
 **Next phase:** Brainstorming (technical exploration)
 

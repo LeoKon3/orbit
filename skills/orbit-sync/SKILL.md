@@ -37,6 +37,7 @@ cat .orbit/state.yaml
 Verify:
 - `phase: build` (should be in build phase)
 - `current_change` exists
+- `change_type` is preserved (default to `feature` if absent)
 
 If not in build phase, explain this is for mid-implementation sync only.
 
@@ -46,7 +47,7 @@ If not in build phase, explain this is for mid-implementation sync only.
 
 ```bash
 # Check if documents are stale
-bash skills/orbit/scripts/orbit-sync-detect.sh
+node skills/orbit/scripts/orbit-sync-detect.js
 
 # Exit 0 = all in sync, Exit 1 = sync needed
 # Script will output which documents are stale and their hash mismatches
@@ -56,10 +57,7 @@ If script exits with 0, no sync needed - announce and exit.
 
 If script exits with 1, continue with sync process below.
 
-**Extract change name:**
-```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-```
+**Identify change name:** Read `current_change` from `.orbit/state.yaml` and use `.orbit/changes/<change-name>/` for all affected documents.
 
 ### Step 3: Analyze Impact
 
@@ -77,6 +75,7 @@ CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 **Assess impact:**
 - Does brainstorming need updates? (architecture, approach, decisions)
 - Does plan need updates? (tasks, file structure, implementation steps)
+- Does the current `change_type` emphasis still fit? (Usually keep it; only propose changing it if the user's intent clearly changed.)
 
 ### Step 4: Present Impact Analysis
 
@@ -95,6 +94,7 @@ CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
 **Recommended action:**
 - Update brainstorming: [specific sections]
 - Update plan: [specific tasks]
+- Keep/change change_type: [reason]
 ```
 
 Ask user: "Should I update brainstorming and plan to match the new spec?"
@@ -146,13 +146,11 @@ Read plan.md and update:
 **Use the hash updater script:**
 
 ```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-
 # Update brainstorming hash (will link to current spec hash)
-bash skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/$CHANGE_NAME/brainstorming.md
+node skills/orbit/scripts/orbit-update-hash.js brainstorming .orbit/changes/<change-name>/brainstorming.md
 
 # Update plan hash (will link to current brainstorming hash)
-bash skills/orbit/scripts/orbit-update-hash.sh plan .orbit/changes/$CHANGE_NAME/plan.md
+node skills/orbit/scripts/orbit-update-hash.js plan .orbit/changes/<change-name>/plan.md
 ```
 
 The script automatically:

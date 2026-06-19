@@ -47,12 +47,7 @@ Read and check:
 - `.orbit/changes/<name>/review.md` - Must show review passed
 - `.orbit/changes/<name>/plan.md` - Check for incomplete tasks
 
-**Count tasks:**
-```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-INCOMPLETE=$(grep -c "^- \[ \]" .orbit/changes/$CHANGE_NAME/plan.md 2>/dev/null || echo 0)
-COMPLETE=$(grep -c "^- \[x\]" .orbit/changes/$CHANGE_NAME/plan.md 2>/dev/null || echo 0)
-```
+**Count tasks:** Read `.orbit/changes/<change-name>/plan.md` and count incomplete `- [ ]` tasks and complete `- [x]` tasks.
 
 If incomplete tasks exist, warn:
 ```
@@ -100,10 +95,8 @@ Wait for user confirmation.
 **Use the spec merger script:**
 
 ```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-
-# Intelligent merge to main specs
-bash skills/orbit/scripts/orbit-merge-spec.sh $CHANGE_NAME
+# Intelligent merge to main specs for the active change in .orbit/state.yaml
+node skills/orbit/scripts/orbit-merge-spec.js
 
 # Script will:
 # - Extract topic from spec title
@@ -118,81 +111,23 @@ bash skills/orbit/scripts/orbit-merge-spec.sh $CHANGE_NAME
 - Verify new requirements were added to change history
 - Manually merge any complex semantic changes the script flagged
 
-### Step 5: Create Archive Directory
+### Step 5: Finalize Archive
+
+Use the cross-platform archive finalizer script:
 
 ```bash
-ARCHIVE_DATE=$(date +%Y-%m-%d)
-ARCHIVE_NAME="$ARCHIVE_DATE-$CHANGE_NAME"
-ARCHIVE_PATH=".orbit/archive/$ARCHIVE_NAME"
-
-mkdir -p .orbit/archive
+node skills/orbit/scripts/orbit-archive-change.js
 ```
 
-**Check if archive already exists:**
-```bash
-if [ -d "$ARCHIVE_PATH" ]; then
-  echo "ERROR: Archive already exists at $ARCHIVE_PATH"
-  echo "Suggest: Use different date suffix or rename existing archive"
-  exit 1
-fi
-```
+The script will:
+- Create `.orbit/archive/` if needed
+- Fail safely if today's archive path already exists
+- Move the active change directory to `.orbit/archive/YYYY-MM-DD-<change-name>/`
+- Write `.archive-meta.yaml` with `change_type`
+- Clear `.orbit/state.yaml` back to idle
+- Create/update `.orbit/archive/INDEX.md`
 
-### Step 6: Move Change to Archive
-
-```bash
-mv .orbit/changes/$CHANGE_NAME $ARCHIVE_PATH
-```
-
-**Add archive metadata:**
-```bash
-cat > $ARCHIVE_PATH/.archive-meta.yaml << EOF
-archived_at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-original_name: $CHANGE_NAME
-archive_name: $ARCHIVE_NAME
-phases_completed:
-  - explore
-  - brainstorming
-  - build
-  - review
-  - archive
-final_status: completed
-EOF
-```
-
-### Step 7: Update State
-
-Clear current change from state:
-
-```bash
-cat > .orbit/state.yaml << EOF
-workflow: full
-phase: idle
-last_archived_change: $ARCHIVE_NAME
-archived_at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")
-EOF
-```
-
-### Step 8: Create Archive Index
-
-Update or create `.orbit/archive/INDEX.md`:
-
-```bash
-if [ ! -f .orbit/archive/INDEX.md ]; then
-  cat > .orbit/archive/INDEX.md << 'EOF'
-# Archived Changes
-
-This directory contains completed and archived changes.
-
-## Archive List
-
-EOF
-fi
-
-# Add entry
-echo "- **$ARCHIVE_DATE** - [$CHANGE_NAME]($ARCHIVE_NAME/) - [Brief description]" >> .orbit/archive/INDEX.md
-```
-
-### Step 9: Announce Completion
+### Step 6: Announce Completion
 
 ```
 ## Archive Complete ✓

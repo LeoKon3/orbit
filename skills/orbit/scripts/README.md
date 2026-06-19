@@ -1,16 +1,17 @@
 # Orbit Scripts
 
-These bash scripts automate critical workflow logic and ensure consistency across phases.
+These Node scripts automate critical workflow logic and ensure consistency across phases.
 
 ## Scripts Overview
 
 | Script | Purpose | Called By |
 |--------|---------|-----------|
-| `orbit-check-state.sh` | Check current workflow state | Main SKILL.md on `/orbit` invocation |
-| `orbit-phase-guard.sh` | Validate phase transitions | Before entering any phase |
-| `orbit-update-hash.sh` | Update document hashes | After creating/updating any document |
-| `orbit-sync-detect.sh` | Detect stale documents | Before build/review phases |
-| `orbit-merge-spec.sh` | Merge specs to main docs | Archive phase |
+| `orbit-check-state.js` | Check current workflow state | Main SKILL.md on `/orbit` invocation |
+| `orbit-phase-guard.js` | Validate phase transitions | Before entering any phase |
+| `orbit-update-hash.js` | Update document hashes | After creating/updating any document |
+| `orbit-sync-detect.js` | Detect stale documents | Before build/review phases |
+| `orbit-merge-spec.js` | Merge specs to main docs | Archive phase |
+| `orbit-archive-change.js` | Move completed change to archive and reset state | Archive phase |
 
 ## Usage in Workflow
 
@@ -18,11 +19,11 @@ These bash scripts automate critical workflow logic and ensure consistency acros
 
 ```bash
 # In main SKILL.md
-./skills/orbit/scripts/orbit-check-state.sh
-# Output: PHASE=build CHANGE=my-feature WORKFLOW=full
+node skills/orbit/scripts/orbit-check-state.js
+# Output: PHASE=build CHANGE=my-feature WORKFLOW=full CHANGE_TYPE=feature
 ```
 
-Determines which phase to execute.
+Determines which phase to execute and which change-type template/checklist to use. `CHANGE_TYPE` defaults to `feature` for older state files.
 
 ---
 
@@ -30,7 +31,7 @@ Determines which phase to execute.
 
 ```bash
 # Before entering brainstorming phase
-./skills/orbit/scripts/orbit-phase-guard.sh brainstorming
+node skills/orbit/scripts/orbit-phase-guard.js brainstorming
 # Exit 0 = can proceed, Exit 1 = missing prerequisites
 ```
 
@@ -46,14 +47,19 @@ Validates:
 
 ```bash
 # After creating spec.md in explore phase
-./skills/orbit/scripts/orbit-update-hash.sh spec .orbit/changes/my-feature/spec.md
+node skills/orbit/scripts/orbit-update-hash.js spec .orbit/changes/my-feature/spec.md
 
 # After creating brainstorming.md in brainstorming phase
-./skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/my-feature/brainstorming.md
+node skills/orbit/scripts/orbit-update-hash.js brainstorming .orbit/changes/my-feature/brainstorming.md
 ```
 
 Updates `.orbit/state.yaml`:
 ```yaml
+workflow: full
+change_type: feature
+phase: build
+current_change: my-feature
+
 documents:
   spec:
     path: .orbit/changes/my-feature/spec.md
@@ -71,7 +77,7 @@ documents:
 
 ```bash
 # Before starting build or review
-./skills/orbit/scripts/orbit-sync-detect.sh
+node skills/orbit/scripts/orbit-sync-detect.js
 # Exit 1 if any document is stale
 ```
 
@@ -86,12 +92,23 @@ Detects hash mismatches:
 
 ```bash
 # When archiving change
-./skills/orbit/scripts/orbit-merge-spec.sh my-feature
+node skills/orbit/scripts/orbit-merge-spec.js my-feature
 ```
 
 Creates or updates `.orbit/specs/<topic>.md`:
 - New topic → Copy change spec directly
 - Existing topic → Append to change history, output new requirements for manual merge
+
+---
+
+### 6. Archive Change (During archive phase)
+
+```bash
+# After merging the spec
+node skills/orbit/scripts/orbit-archive-change.js my-feature
+```
+
+Moves `.orbit/changes/<name>/` to `.orbit/archive/YYYY-MM-DD-<name>/`, writes archive metadata, updates `INDEX.md`, and resets `.orbit/state.yaml` to idle.
 
 ---
 
@@ -102,46 +119,47 @@ Creates or updates `.orbit/specs/<topic>.md`:
 ```
 User: /orbit
 
-┌─ orbit-check-state.sh
+┌─ orbit-check-state.js
 │  → PHASE=none → Start explore
 │
 ├─ Explore Phase
+│  ├─ Classify change_type (feature | bugfix | refactor | docs | workflow)
 │  ├─ Create proposal.md
-│  ├─ orbit-update-hash.sh proposal ...
+│  ├─ orbit-update-hash.js proposal ...
 │  ├─ Create spec.md
-│  ├─ orbit-update-hash.sh spec ...
-│  └─ orbit-phase-guard.sh brainstorming ✓
+│  ├─ orbit-update-hash.js spec ...
+│  └─ orbit-phase-guard.js brainstorming ✓
 │
 ├─ Brainstorming Phase
-│  ├─ orbit-sync-detect.sh (checks spec hash)
+│  ├─ orbit-sync-detect.js (checks spec hash)
 │  ├─ Create brainstorming.md
-│  ├─ orbit-update-hash.sh brainstorming ...
-│  └─ orbit-phase-guard.sh build ✓
+│  ├─ orbit-update-hash.js brainstorming ...
+│  └─ orbit-phase-guard.js build ✓
 │
 ├─ Build Phase
-│  ├─ orbit-sync-detect.sh (checks brainstorming hash)
+│  ├─ orbit-sync-detect.js (checks brainstorming hash)
 │  │  → ⚠️ Spec changed! Sync needed
 │  │
 │  ├─ Sync Phase (automatic)
 │  │  ├─ Update brainstorming.md surgically
-│  │  ├─ orbit-update-hash.sh brainstorming ...
+│  │  ├─ orbit-update-hash.js brainstorming ...
 │  │  └─ Update plan.md surgically
 │  │
 │  ├─ Create plan.md
-│  ├─ orbit-update-hash.sh plan ...
+│  ├─ orbit-update-hash.js plan ...
 │  ├─ Implementation...
-│  └─ orbit-phase-guard.sh review ✓
+│  └─ orbit-phase-guard.js review ✓
 │
 ├─ Review Phase
-│  ├─ orbit-sync-detect.sh (checks plan hash)
+│  ├─ orbit-sync-detect.js (checks plan hash)
 │  ├─ Create review.md
-│  └─ orbit-phase-guard.sh archive ✓
+│  └─ orbit-phase-guard.js archive ✓
 │
 └─ Archive Phase
-   ├─ orbit-merge-spec.sh my-feature
+   ├─ orbit-merge-spec.js my-feature
    │  → Merges to .orbit/specs/authentication.md
-   ├─ Move to .orbit/archive/2026-06-17-my-feature/
-   └─ Clear state
+   └─ orbit-archive-change.js my-feature
+      → Moves to .orbit/archive/2026-06-17-my-feature/ and clears state
 ```
 
 ---
@@ -152,16 +170,19 @@ Users can also run these scripts directly for debugging:
 
 ```bash
 # Check current state
-./skills/orbit/scripts/orbit-check-state.sh
+node skills/orbit/scripts/orbit-check-state.js
 
 # Test if can move to review
-./skills/orbit/scripts/orbit-phase-guard.sh review
+node skills/orbit/scripts/orbit-phase-guard.js review
 
 # Check for stale documents
-./skills/orbit/scripts/orbit-sync-detect.sh
+node skills/orbit/scripts/orbit-sync-detect.js
 
 # Manually merge a spec
-./skills/orbit/scripts/orbit-merge-spec.sh feature-name
+node skills/orbit/scripts/orbit-merge-spec.js feature-name
+
+# Finalize archive for a completed change
+node skills/orbit/scripts/orbit-archive-change.js feature-name
 ```
 
 ---
@@ -178,8 +199,8 @@ Users can also run these scripts directly for debugging:
 
 ## Implementation Notes
 
-- All scripts use `set -euo pipefail` for safety
+- Automation scripts run on Node.js for Windows/macOS/Linux compatibility
 - Exit codes: 0 = success, 1 = failure/invalid
 - Color output: red (error), green (success), yellow (warning), blue (info)
-- Scripts are idempotent and safe to re-run
-- No external dependencies (pure bash + coreutils)
+- Validation/hash scripts are safe to re-run; archive finalization is one-shot and refuses duplicate archive paths
+- No external dependencies (Node.js built-ins only)

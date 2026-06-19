@@ -10,6 +10,20 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 
 **Core principle:** Review early, review often.
 
+## Change-Type Review Checklist
+
+Read `change_type` from `.orbit/state.yaml` and include the relevant checklist in `review.md`:
+
+| change_type | Review must verify |
+|-------------|--------------------|
+| `feature` | Requirements implemented, acceptance criteria met, edge cases handled, tests cover core paths |
+| `bugfix` | Original bug was reproduced or otherwise evidenced, fix addresses root cause, original bug no longer reproduces, regression coverage exists or omission is justified |
+| `refactor` | External behavior preserved, tests/characterization checks pass, complexity or structure improved without scope creep |
+| `docs` | Commands/examples are accurate, links/paths exist, language versions are consistent where applicable |
+| `workflow` | Skill references exist, phase/state transitions remain consistent, scripts work, package/install/update/uninstall boundaries are safe |
+
+For `bugfix`, do not mark review passed unless the review records how the original failure was verified fixed.
+
 ## When to Request Review
 
 **Mandatory:**
@@ -21,6 +35,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade. The revie
 - When stuck (fresh perspective)
 - Before refactoring (baseline check)
 - After fixing complex bug
+- Whenever `change_type=bugfix`, to confirm the original failure no longer reproduces
 
 ## How to Request
 
@@ -53,8 +68,8 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 
 You: Let me request code review before proceeding.
 
-BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
-HEAD_SHA=$(git rev-parse HEAD)
+BASE_SHA=<base commit before this task>
+HEAD_SHA=<current commit, or omit HEAD to review the working tree>
 
 [Dispatch code reviewer subagent]
   DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
@@ -108,16 +123,13 @@ See template at: [code-reviewer.md](code-reviewer.md)
 Once review passes with no critical or important issues:
 
 ```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-
 # Update review document hash
-bash skills/orbit/scripts/orbit-update-hash.sh review .orbit/changes/$CHANGE_NAME/review.md
+node skills/orbit/scripts/orbit-update-hash.js review .orbit/changes/<change-name>/review.md
 
 # Check if can transition to archive
-bash skills/orbit/scripts/orbit-phase-guard.sh archive
-
-# If guard passes, update phase
-sed -i 's/^phase:.*/phase: archive/' .orbit/state.yaml
+node skills/orbit/scripts/orbit-phase-guard.js archive
 ```
+
+If the guard passes, update `.orbit/state.yaml` by setting `phase: archive`.
 
 Announce: "Review passed! Ready to archive with `/orbit`"

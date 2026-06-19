@@ -162,15 +162,16 @@ spec.md         .md         + code              + merge
 
 ### 1. Script-Based Automation
 
-All critical logic is in bash scripts (not agent promises):
+All critical logic is in cross-platform Node.js scripts (not agent promises):
 
 ```bash
 skills/orbit/scripts/
-├── orbit-check-state.sh     # Detect current phase
-├── orbit-phase-guard.sh     # Validate transitions
-├── orbit-update-hash.sh     # Track document changes
-├── orbit-sync-detect.sh     # Detect stale documents
-└── orbit-merge-spec.sh      # Intelligent spec merging
+├── orbit-check-state.js      # Detect current phase
+├── orbit-phase-guard.js      # Validate transitions
+├── orbit-update-hash.js      # Track document changes
+├── orbit-sync-detect.js      # Detect stale documents
+├── orbit-merge-spec.js       # Intelligent spec merging
+└── orbit-archive-change.js   # Finalize archive and reset state
 ```
 
 ### 2. Hash-Based Document Tracking
@@ -216,7 +217,7 @@ Prevent invalid transitions:
 
 ```bash
 # Can't skip phases
-bash skills/orbit/scripts/orbit-phase-guard.sh archive
+node skills/orbit/scripts/orbit-phase-guard.js archive
 # ✗ Missing review.md. Run review phase first.
 ```
 
@@ -242,11 +243,12 @@ skills/
 ├── orbit/                    # Main dispatcher + shared scripts
 │   ├── SKILL.md
 │   └── scripts/
-│       ├── orbit-check-state.sh
-│       ├── orbit-phase-guard.sh
-│       ├── orbit-update-hash.sh
-│       ├── orbit-sync-detect.sh
-│       └── orbit-merge-spec.sh
+│       ├── orbit-check-state.js
+│       ├── orbit-phase-guard.js
+│       ├── orbit-update-hash.js
+│       ├── orbit-sync-detect.js
+│       ├── orbit-merge-spec.js
+│       └── orbit-archive-change.js
 │
 ├── orbit-explore/           # Phase 1: Requirements
 ├── orbit-brainstorming/     # Phase 2: Technical design
@@ -357,16 +359,16 @@ brainstorming:
   based_on_spec_hash: bbb222...  ✗ MISMATCH
 ```
 
-→ `orbit-sync-detect.sh` catches this  
-→ Automatically triggers `/orbit-sync`  
-→ Updates brainstorming.md and plan.md  
+→ `orbit-sync-detect.js` catches this
+→ Automatically triggers `/orbit-sync`
+→ Updates brainstorming.md and plan.md
 → Rebuilds hash chain
 
 ---
 
 ## Design Principles
 
-1. **Script-First** - Critical logic in bash scripts, not agent interpretation
+1. **Script-First** - Critical logic in cross-platform Node.js scripts, not agent interpretation
 2. **Hash-Based Traceability** - SHA256 tracks all document relationships
 3. **Automatic Sync** - Spec changes trigger surgical updates, not full rewrites
 4. **Phase Guards** - Prevent invalid workflow states
@@ -393,38 +395,6 @@ brainstorming:
 
 - [orbit-project-plan.md](orbit-project-plan.md) - Original project plan
 - [CLAUDE.md](CLAUDE.md) - Development guidelines
-
----
-
-## Roadmap
-
-### ✅ v0.1.0 - MVP (Current)
-
-- ✅ 5-phase workflow skills
-- ✅ Script-based automation
-- ✅ Hash-based document tracking
-- ✅ Sync detection and recovery
-- ✅ Independent skill invocation
-
-### v0.2.0 - Enhanced Features
-
-- [ ] Workflow templates (explore-only, build-only)
-- [ ] Hotfix and tweak workflows
-- [ ] Better error recovery
-- [ ] Multi-language support
-
-### v0.3.0 - Integration
-
-- [ ] Git hooks for commit verification
-- [ ] CI/CD integration
-- [ ] Team collaboration features
-
-### v1.0.0 - Production Ready
-
-- [ ] Full test coverage
-- [ ] Complete documentation
-- [ ] Performance optimization
-- [ ] Community promotion
 
 ---
 

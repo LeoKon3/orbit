@@ -20,14 +20,7 @@ Execute the implementation plan using either subagent-driven development (comple
 
 Check that plan.md exists:
 
-```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-
-if [ ! -f ".orbit/changes/$CHANGE_NAME/plan.md" ]; then
-  echo "ERROR: No plan found. Run /orbit-planning first."
-  exit 1
-fi
-```
+Read `current_change` from `.orbit/state.yaml`, then verify `.orbit/changes/<change-name>/plan.md` exists. If it is missing, stop and ask the user to run `/orbit-planning` first.
 
 ---
 
@@ -36,29 +29,28 @@ fi
 Before starting implementation, check if documents are stale:
 
 ```bash
-bash skills/orbit/scripts/orbit-sync-detect.sh
-
-if [ $? -eq 1 ]; then
-  echo "⚠️  Documents out of sync. Running sync first..."
-  # Automatically trigger orbit-sync
-  # After sync completes, continue with build
-fi
+node skills/orbit/scripts/orbit-sync-detect.js
 ```
+
+If the script exits with 1, documents are out of sync: run orbit-sync first, then continue with build.
 
 ---
 
 ## Determine Execution Strategy
 
-Read the plan and count tasks:
+Read `change_type` before execution:
 
 ```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-PLAN_FILE=".orbit/changes/$CHANGE_NAME/plan.md"
-
-TASK_COUNT=$(grep -c "^### Task" "$PLAN_FILE" || echo 0)
-
-echo "Plan has $TASK_COUNT tasks"
+node skills/orbit/scripts/orbit-check-state.js
 ```
+
+Use `CHANGE_TYPE` from the output; default to `feature` if it is empty.
+
+Build still requires `plan.md` for every change type. For `bugfix`, do not start implementation until the plan includes reproduction/regression verification for the original bug.
+
+Read the plan and count tasks:
+
+Read `.orbit/changes/<change-name>/plan.md` and count headings that start with `### Task`. Use that count to choose the execution strategy.
 
 **Decision:**
 - **≥ 3 tasks** → Use subagent-driven development (same-session controller + subagents)
@@ -73,6 +65,11 @@ Both execution paths must return control to orbit-build for final Build bookkeep
 Regardless of which execution skill you choose:
 
 - `plan.md` is the execution plan, not the completion ledger.
+- Preserve the `change_type` emphasis during execution:
+  - `bugfix`: reproduce/verify the original bug, add or update regression coverage when practical, and record proof in `build-summary.md`.
+  - `refactor`: prove external behavior is preserved.
+  - `docs`: verify changed commands, links, and examples.
+  - `workflow`: verify skill references, script paths, and packaging boundaries.
 - Do **not** mark plan checkboxes complete or append execution notes to `plan.md` unless the plan explicitly says it is a live checklist.
 - Store execution artifacts under:
 
@@ -132,9 +129,7 @@ When the chosen execution skill finishes:
 4. Write/update `build-summary.md` if a Build summary is needed
 5. If Build is complete, update the Orbit state:
 
-```bash
-sed -i 's/^phase:.*/phase: review/' .orbit/state.yaml
-```
+Update `.orbit/state.yaml` by setting `phase: review`.
 
 6. Announce completion:
 

@@ -9,6 +9,7 @@ Read this first — it is your requirements, with exact values to use verbatim:
 <task-brief-path>
 
 Project constraints:
+- Change type: <feature|bugfix|refactor|docs|workflow>. Preserve this emphasis in implementation and verification.
 - Work directly in <repo-root> on the current working tree unless the user explicitly requested a worktree.
 - Do not commit unless the user explicitly asked for commits.
 - Check git status before editing.
@@ -17,6 +18,10 @@ Project constraints:
 - Follow TDD for behavior changes: write/adjust a test first and watch it fail when practical.
 - You are working inside an Orbit workflow: prefer `orbit-*` skills when they cover the current job.
 - Prefer `orbit-tdd` for TDD and `orbit-verify` for verification; fall back to generic skills only if no suitable Orbit skill exists.
+- For `bugfix`, preserve the reproduction/root-cause/regression proof requested by the task brief.
+- For `refactor`, preserve external behavior and report the behavior checks you ran.
+- For `docs`, verify changed commands, links, examples, and language consistency where relevant.
+- For `workflow`, verify skill references, script paths, state transitions, and packaging boundaries.
 - Do not invoke Orbit phase-transition skills such as `/orbit-explore`, `/orbit-brainstorming`, `/orbit-planning`, or `/orbit-archive` from task implementation.
 - Do not mutate `.orbit/state.yaml`, and do not rewrite `proposal.md`, `spec.md`, `brainstorming.md`, or `plan.md` as task bookkeeping.
 - Write task artifacts into the active change's `.orbit/changes/<change-name>/execution/` directory as directed by the controller.

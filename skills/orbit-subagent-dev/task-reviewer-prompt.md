@@ -20,6 +20,9 @@ Execution artifact directory for this change:
 Global constraints binding this task:
 <paste exact constraints from plan that apply to this task>
 
+Change type:
+<feature|bugfix|refactor|docs|workflow> — apply the matching review emphasis from the plan and active Orbit state.
+
 ## Your job
 
 Deliver two verdicts:
@@ -41,6 +44,12 @@ For each requirement in the brief:
 
 For code in the diff but not in requirements:
 - Flag as "Extra: <description>"
+
+Apply change-type checks:
+- `bugfix`: original failure is evidenced, root cause is addressed, and regression verification is recorded.
+- `refactor`: external behavior is preserved and behavior checks are recorded.
+- `docs`: changed commands, links, examples, and language variants are verified where relevant.
+- `workflow`: skill references, script paths, state transitions, and packaging boundaries are verified.
 
 ## Code quality review
 

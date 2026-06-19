@@ -19,6 +19,20 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Save plans to:** `.orbit/changes/<name>/plan.md`
 - (User preferences for plan location override this default)
 
+## Change-Type Adaptation
+
+Read `change_type` from `.orbit/state.yaml` before writing the plan. Default to `feature` if absent.
+
+| change_type | Planning emphasis |
+|-------------|-------------------|
+| `feature` | Full implementation plan with architecture, APIs/UI/data changes, tests, docs |
+| `bugfix` | Minimal fix plan: reproduce, regression test, root-cause fix, failure-state handling, verification |
+| `refactor` | Safe migration plan: characterization tests, small transformations, behavior-preservation checks |
+| `docs` | Documentation checklist: affected docs, examples/commands/links to verify, language sync |
+| `workflow` | Process/tooling plan: skill/script/docs changes, state compatibility, package/install/update/uninstall safety |
+
+Lightweight types may have fewer tasks and shorter sections, but still write `plan.md`. Do not jump directly to Build execution without a persistent plan.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -59,6 +73,8 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
+**Change Type:** [feature | bugfix | refactor | docs | workflow]
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use orbit-subagent-dev (recommended) or orbit-executing to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
@@ -76,6 +92,16 @@ include this section.]
 
 ---
 ```
+
+## Type-Specific Task Patterns
+
+Use these patterns to shape tasks:
+
+- `feature`: build vertical slices that deliver user-visible behavior with tests.
+- `bugfix`: include a reproduction/regression step before the fix, then verify the original bug no longer reproduces.
+- `refactor`: start with characterization tests or explicit behavior checks, then migrate in reversible steps.
+- `docs`: group by reader-facing deliverable; include command/link/example verification.
+- `workflow`: group by skill/script/package surface; include compatibility and stale-reference checks.
 
 ## Task Structure
 
@@ -141,6 +167,10 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Complete code in every step — if a step changes code, show the code
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
+- For `bugfix`, the plan is not complete unless it names the original failure and the verification that proves it is fixed
+- For `refactor`, the plan is not complete unless it names behavior-preservation checks
+- For `docs`, the plan is not complete unless it names command/link/example checks where applicable
+- For `workflow`, the plan is not complete unless it names state/skill/script consistency checks
 
 ## Self-Review
 
@@ -159,10 +189,8 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 After saving the plan, update the state:
 
 ```bash
-CHANGE_NAME=$(grep "current_change:" .orbit/state.yaml | cut -d' ' -f2)
-
 # Update plan hash (will link to brainstorming hash)
-bash skills/orbit/scripts/orbit-update-hash.sh plan .orbit/changes/$CHANGE_NAME/plan.md
+node skills/orbit/scripts/orbit-update-hash.js plan .orbit/changes/<change-name>/plan.md
 ```
 
 This ensures the plan is tracked with proper hash lineage.

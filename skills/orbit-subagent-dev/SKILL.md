@@ -24,6 +24,8 @@ Execute plan by dispatching a fresh implementer subagent per task, with a task r
 
 Use this execution directory as the official ledger/report location for Orbit Build. Do not treat `plan.md` as the execution ledger.
 
+**Change-type awareness:** Read `change_type` from `.orbit/state.yaml` and pass it into every implementer and reviewer prompt. Preserve the active emphasis in task execution: `bugfix` needs original-failure proof and regression verification, `refactor` needs behavior-preservation checks, `docs` needs command/link/example verification, and `workflow` needs skill/script/state/package consistency checks.
+
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
@@ -70,11 +72,11 @@ digraph process {
         "Mark task complete in execution progress ledger" [shape=box];
     }
 
-    "Read plan, note context and global constraints, create todos" [shape=box];
+    "Read plan, change_type, context, global constraints; create todos" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Write/update build summary and return result to orbit-build" [shape=box];
 
-    "Read plan, note context and global constraints, create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
+    "Read plan, change_type, context, global constraints; create todos" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
     "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
     "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
@@ -141,7 +143,7 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`scripts/review-package BASE [HEAD]`, from this skill's directory — it prints the stable file path it wrote into the active change's `execution/` directory. Use `HEAD` when the task intentionally uses a commit boundary; omit it to package the current working tree diff from `BASE`. Never rely on `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package (`node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]`, from the workspace root — it prints the stable file path it wrote into the active change's `execution/` directory. Use `HEAD` when the task intentionally uses a commit boundary; omit it to package the current working tree diff from `BASE`. Never rely on `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them in `build-summary.md` under the active change's `execution/` directory and proceed to review.
 
@@ -186,7 +188,7 @@ Per-task reviews are task-scoped gates. When you fill a reviewer template:
   test hygiene, review method) — the constraints block is for what THIS
   project's spec demands.
 - Hand the reviewer its diff as a file: run this skill's
-  `scripts/review-package BASE [HEAD]` and pass the reviewer the file path
+  `node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]` and pass the reviewer the file path
   it prints from the active change's `execution/` directory. When the task
   uses an explicit commit boundary, provide `HEAD`; otherwise omit it so the
   package captures the current working tree diff from `BASE`. The output never
@@ -226,23 +228,23 @@ For the active Orbit change, use this execution directory:
 ```
 
 - **Task brief:** before dispatching an implementer, run this skill's
-  `scripts/task-brief PLAN_FILE N` — it extracts the task's full text to a
+  `node skills/orbit-subagent-dev/scripts/task-brief.js PLAN_FILE N` — it extracts the task's full text to a
   stable file in the active change's `execution/` directory and
   prints the path. Compose the dispatch so the brief stays the single source
   of requirements. Your dispatch should contain: (1) one line on where this
-  task fits in the project; (2) the brief path, introduced as "read this
-  first — it is your requirements, with the exact values to use verbatim";
-  (3) interfaces and decisions from earlier tasks that the brief cannot know;
-  (4) your resolution of any ambiguity you noticed in the brief; (5) the
-  report-file path and report contract. Exact values (numbers, magic
-  strings, signatures, test cases) appear only in the brief.
+  task fits in the project; (2) the active `change_type`; (3) the brief path,
+  introduced as "read this first — it is your requirements, with the exact
+  values to use verbatim"; (4) interfaces and decisions from earlier tasks
+  that the brief cannot know; (5) your resolution of any ambiguity you noticed
+  in the brief; (6) the report-file path and report contract. Exact values
+  (numbers, magic strings, signatures, test cases) appear only in the brief.
 - **Report file:** name the implementer's report file after the brief
   (brief `…/task-N-brief.md` → report `…/task-N-report.md`) and put it in
   the dispatch prompt. The implementer writes the full report there and
   returns only status, files changed, a one-line test summary, and concerns.
 - **Reviewer inputs:** the task reviewer gets three paths — the same brief
-  file, the report file, and the review package — plus the global
-  constraints that bind the task.
+  file, the report file, and the review package — plus the active
+  `change_type` and the global constraints that bind the task.
 - **Build summary:** keep Build-level concerns and completion notes in
   `build-summary.md` inside the same `execution/` directory. Do not append
   these notes to `plan.md`.
@@ -385,7 +387,7 @@ Done!
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
 - Make a subagent read the whole plan file (hand it its task brief —
-  `scripts/task-brief` — instead)
+  `scripts/task-brief.js` — instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
 - Accept "close enough" on spec compliance (reviewer found spec issues = not done)
@@ -395,7 +397,7 @@ Done!
   dispatch prompt ("treat it as Minor at most") — the plan's example code is
   a starting point, not evidence that its weaknesses were chosen
 - Dispatch a task reviewer without a diff file — generate it first
-  (`scripts/review-package BASE [HEAD]`) and name the printed path in the
+  (`node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]`) and name the printed path in the
   prompt
 - Move to next task while the review has open Critical/Important issues
 - Re-dispatch a task the progress ledger already marks complete — check

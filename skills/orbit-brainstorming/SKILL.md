@@ -14,6 +14,28 @@ Start by understanding the current project context, then ask questions one at a 
 Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
 </HARD-GATE>
 
+## Change-Type Adaptation
+
+Before asking detailed questions, read `.orbit/state.yaml` and identify `change_type` (default to `feature` if absent):
+
+```bash
+node skills/orbit/scripts/orbit-check-state.js
+```
+
+Use `CHANGE_TYPE` from the output; default to `feature` if it is empty.
+
+Use the same phase and artifact (`brainstorming.md`) for every type, but adjust depth:
+
+| change_type | Brainstorming focus | Expected weight |
+|-------------|---------------------|-----------------|
+| `feature` | Product/technical design, architecture, components, data flow, testing | Full |
+| `bugfix` | Reproduction evidence, root cause analysis, fix strategy, regression risk | Lightweight |
+| `refactor` | Current pain, behavior-preservation constraints, migration strategy, rollback risk | Medium |
+| `docs` | Reader, information architecture, examples/commands/links to verify | Lightweight |
+| `workflow` | State machine, skill handoff, script paths, package/install/update/uninstall safety | Medium/strict |
+
+For `bugfix`, do not skip this phase. Keep it short and write a Root Cause Analysis + Fix Strategy so the repair remains resumable across sessions.
+
 ## Anti-Pattern: "This Is Too Simple To Need A Design"
 
 Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
@@ -66,6 +88,10 @@ digraph brainstorming {
 **Understanding the idea:**
 
 - Check out the current project state first (files, docs, recent commits)
+- If `change_type=bugfix`, prioritize actual behavior, expected behavior, reproduction steps, failing API/log/test evidence, suspected root cause, and regression risk over broad product ideation.
+- If `change_type=refactor`, prioritize preserved behavior, risk boundaries, migration seams, and tests that prove nothing externally changed.
+- If `change_type=docs`, prioritize reader path, scope, command/link accuracy, and language/version coverage.
+- If `change_type=workflow`, prioritize Orbit state consistency, skill references, script behavior, package publishing safety, and compatibility with existing changes.
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
@@ -81,7 +107,11 @@ digraph brainstorming {
 
 **Presenting the design:**
 
-- Once you believe you understand what you're building, present the design
+- Once you believe you understand what you're building, present the design or type-specific strategy.
+- For `bugfix`, present: observed failure, suspected root cause, fix strategy, regression tests, and sensitive-data/safety checks.
+- For `refactor`, present: behavior-preservation contract, migration steps, rollback plan, and test strategy.
+- For `docs`, present: target reader, document structure, examples to verify, and language sync plan.
+- For `workflow`, present: state/phase changes, skill handoffs, script/doc changes, and compatibility risks.
 - Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
 - Ask after each section whether it looks right so far
 - Cover: architecture, components, data flow, error handling, testing
@@ -106,6 +136,8 @@ digraph brainstorming {
 
 - Write the validated brainstorming doc to `.orbit/changes/<name>/brainstorming.md`
   - (User preferences for spec location override this default)
+  - Include `Change Type: <type>` near the top.
+  - For `bugfix`, use concise sections: Observed Failure, Evidence, Root Cause, Fix Strategy, Regression Verification, Risks.
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the brainstorming document to git
 
@@ -129,8 +161,8 @@ Wait for the user's response. If they request changes, make them and re-run the 
 **Implementation:**
 
 - Save brainstorming.md to `.orbit/changes/<name>/brainstorming.md`
-- Update state with brainstorming hash using: `bash skills/orbit/scripts/orbit-update-hash.sh brainstorming .orbit/changes/<name>/brainstorming.md`
-- Transition to build phase: `sed -i 's/^phase:.*/phase: build/' .orbit/state.yaml`
+- Update state with brainstorming hash using: `node skills/orbit/scripts/orbit-update-hash.js brainstorming .orbit/changes/<name>/brainstorming.md`
+- Transition to build phase by updating `.orbit/state.yaml` to `phase: build`
 - Invoke the orbit-planning skill to create a detailed implementation plan
 - Do NOT invoke any other skill. orbit-planning is the next step.
 

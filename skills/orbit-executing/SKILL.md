@@ -26,6 +26,12 @@ Do not use `plan.md` as the execution ledger.
 
 **Selection note:** If orbit-build has already selected orbit-executing for a small or tightly coupled plan, follow that choice. Prefer orbit-subagent-dev only when you are choosing an execution strategy outside orbit-build and subagent support is available.
 
+**Change-type awareness:** Read `change_type` from `.orbit/state.yaml` before execution and keep the task work aligned with it:
+- `bugfix`: reproduce or evidence the original failure, apply the root-cause fix, and record regression verification.
+- `refactor`: preserve external behavior and record behavior-preservation checks.
+- `docs`: verify commands, links, examples, and language consistency where relevant.
+- `workflow`: verify skill references, script paths, state transitions, and packaging boundaries.
+
 ## The Process
 
 ### Step 1: Load and Review Plan
@@ -39,9 +45,10 @@ Do not use `plan.md` as the execution ledger.
 For each task:
 1. Mark as in_progress in the execution ledger under `.orbit/changes/<change-name>/execution/`
 2. Follow each step exactly (plan has bite-sized steps)
-3. Run verifications as specified
-4. Write task-specific notes/reports into the same `execution/` directory
-5. Mark as completed in the execution ledger
+3. Preserve the active `change_type` emphasis while implementing and verifying
+4. Run verifications as specified
+5. Write task-specific notes/reports into the same `execution/` directory
+6. Mark as completed in the execution ledger
 
 ### Step 3: Return Build Result
 
@@ -79,6 +86,7 @@ orbit-build will use your execution artifacts to decide whether to advance the w
 - Follow plan steps exactly
 - Don't skip verifications
 - Reference Orbit skills when Orbit provides the matching capability
+- Carry the active `change_type` through implementation, verification, and `build-summary.md`
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
 - Do not treat `plan.md` as the completion ledger

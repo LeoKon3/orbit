@@ -163,15 +163,16 @@ spec.md    .md
 
 ### 1. 基于脚本的自动化
 
-所有关键逻辑都在 bash 脚本中（而非代理承诺）：
+所有关键逻辑都在跨平台 Node.js 脚本中（而非代理承诺）：
 
 ```bash
 skills/orbit/scripts/
-├── orbit-check-state.sh     # 检测当前阶段
-├── orbit-phase-guard.sh     # 验证转换
-├── orbit-update-hash.sh     # 跟踪文档变更
-├── orbit-sync-detect.sh     # 检测过期文档
-└── orbit-merge-spec.sh      # 智能规格合并
+├── orbit-check-state.js      # 检测当前阶段
+├── orbit-phase-guard.js      # 验证转换
+├── orbit-update-hash.js      # 跟踪文档变更
+├── orbit-sync-detect.js      # 检测过期文档
+├── orbit-merge-spec.js       # 智能规格合并
+└── orbit-archive-change.js   # 完成归档并重置状态
 ```
 
 ### 2. 基于哈希的文档跟踪
@@ -217,7 +218,7 @@ documents:
 
 ```bash
 # 不能跳过阶段
-bash skills/orbit/scripts/orbit-phase-guard.sh archive
+node skills/orbit/scripts/orbit-phase-guard.js archive
 # ✗ 缺少 review.md。请先运行审查阶段。
 ```
 
@@ -243,11 +244,12 @@ skills/
 ├── orbit/                    # 主调度器 + 共享脚本
 │   ├── SKILL.md
 │   └── scripts/
-│       ├── orbit-check-state.sh
-│       ├── orbit-phase-guard.sh
-│       ├── orbit-update-hash.sh
-│       ├── orbit-sync-detect.sh
-│       └── orbit-merge-spec.sh
+│       ├── orbit-check-state.js
+│       ├── orbit-phase-guard.js
+│       ├── orbit-update-hash.js
+│       ├── orbit-sync-detect.js
+│       ├── orbit-merge-spec.js
+│       └── orbit-archive-change.js
 │
 ├── orbit-explore/           # 阶段 1：需求
 ├── orbit-brainstorming/     # 阶段 2：技术设计
@@ -358,16 +360,16 @@ brainstorming:
   based_on_spec_hash: bbb222...  ✗ 不匹配
 ```
 
-→ `orbit-sync-detect.sh` 捕获此情况  
-→ 自动触发 `/orbit-sync`  
-→ 更新 brainstorming.md 和 plan.md  
+→ `orbit-sync-detect.js` 捕获此情况
+→ 自动触发 `/orbit-sync`
+→ 更新 brainstorming.md 和 plan.md
 → 重建哈希链
 
 ---
 
 ## 设计原则
 
-1. **脚本优先** - 关键逻辑在 bash 脚本中，而非代理解释
+1. **脚本优先** - 关键逻辑在跨平台 Node.js 脚本中，而非代理解释
 2. **基于哈希的可追溯性** - SHA256 跟踪所有文档关系
 3. **自动同步** - 规格变更触发精准更新，而非完全重写
 4. **阶段守卫** - 防止无效的工作流状态
@@ -394,38 +396,6 @@ brainstorming:
 
 - [orbit-project-plan.md](orbit-project-plan.md) - 原始项目计划
 - [CLAUDE.md](CLAUDE.md) - 开发指南
-
----
-
-## 路线图
-
-### ✅ v0.1.0 - MVP（当前）
-
-- ✅ 5 阶段工作流技能
-- ✅ 基于脚本的自动化
-- ✅ 基于哈希的文档跟踪
-- ✅ 同步检测和恢复
-- ✅ 独立技能调用
-
-### v0.2.0 - 增强功能
-
-- [ ] 工作流模板（仅探索、仅构建）
-- [ ] 热修复和微调工作流
-- [ ] 更好的错误恢复
-- [ ] 多语言支持
-
-### v0.3.0 - 集成
-
-- [ ] 用于提交验证的 Git 钩子
-- [ ] CI/CD 集成
-- [ ] 团队协作功能
-
-### v1.0.0 - 生产就绪
-
-- [ ] 完整的测试覆盖
-- [ ] 完整的文档
-- [ ] 性能优化
-- [ ] 社区推广
 
 ---
 

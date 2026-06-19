@@ -1,6 +1,6 @@
 {
   "name": "@leokon3/orbit",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "CLI installer for Orbit AI workflow skills",
   "license": "MIT",
   "type": "commonjs",
@@ -8,7 +8,7 @@
     "orbit": "bin/orbit.js"
   },
   "scripts": {
-    "test": "node test/orbit-cli.test.js"
+    "test": "node test/orbit-cli.test.js && node test/orbit-scripts.test.js"
   },
   "files": [
     "bin/",
