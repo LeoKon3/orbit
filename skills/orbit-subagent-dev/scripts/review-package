@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: review-package BASE [HEAD]" >&2
+}
+
+if [ "$#" -lt 1 ] || [ "$#" -gt 2 ]; then
+  usage
+  exit 2
+fi
+
+BASE="$1"
+HEAD="${2:-}"
+
+if [ -f .orbit/state.yaml ]; then
+  CHANGE_NAME="$(grep '^current_change:' .orbit/state.yaml | cut -d' ' -f2)"
+  DEFAULT_OUTPUT_DIR=".orbit/changes/$CHANGE_NAME/execution"
+else
+  DEFAULT_OUTPUT_DIR="$(git rev-parse --git-path sdd 2>/dev/null || printf '.git/sdd')"
+fi
+
+OUTPUT_DIR="$DEFAULT_OUTPUT_DIR"
+
+if ! git rev-parse --verify "$BASE^{commit}" >/dev/null 2>&1; then
+  echo "ERROR: base commit not found: $BASE" >&2
+  exit 1
+fi
+
+if [ -n "$HEAD" ] && ! git rev-parse --verify "$HEAD^{commit}" >/dev/null 2>&1; then
+  echo "ERROR: head commit not found: $HEAD" >&2
+  exit 1
+fi
+
+mkdir -p "$OUTPUT_DIR"
+BASE_SHORT="$(git rev-parse --short "$BASE")"
+HEAD_LABEL="${HEAD:-working-tree}"
+HEAD_SHORT="$(if [ -n "$HEAD" ]; then git rev-parse --short "$HEAD"; else printf 'working-tree'; fi)"
+OUTPUT_FILE="$OUTPUT_DIR/review-${BASE_SHORT}-${HEAD_SHORT}.md"
+
+if [ -n "$HEAD" ]; then
+  LOG_CMD=(git log --oneline --decorate "$BASE..$HEAD")
+  STAT_CMD=(git diff --stat "$BASE..$HEAD")
+  DIFF_CMD=(git diff -U10 "$BASE..$HEAD")
+else
+  LOG_CMD=(git log --oneline --decorate "$BASE..HEAD")
+  STAT_CMD=(git diff --stat "$BASE")
+  DIFF_CMD=(git diff -U10 "$BASE")
+fi
+
+{
+  echo "# Review Package"
+  echo
+  echo "Base: \`$BASE\` ($BASE_SHORT)"
+  echo "Head: \`$HEAD_LABEL\` ($HEAD_SHORT)"
+  echo
+  echo "## Commits"
+  echo
+  "${LOG_CMD[@]}" || true
+  echo
+  echo "## Diff Stat"
+  echo
+  "${STAT_CMD[@]}" || true
+  echo
+  echo "## Diff"
+  echo
+  echo '```diff'
+  "${DIFF_CMD[@]}" || true
+  echo '```'
+} > "$OUTPUT_FILE"
+
+printf '%s\n' "$OUTPUT_FILE"

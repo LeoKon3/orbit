@@ -1,6 +1,6 @@
 ---
 name: orbit-executing
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: Use when orbit-build selects inline execution for a small or tightly coupled implementation plan
 source: Adapted from Superpowers executing-plans (MIT License)
 license: MIT
 ---
@@ -11,9 +11,21 @@ license: MIT
 
 Load plan, review critically, execute all tasks, report when complete.
 
-**Announce at start:** "I'm using the executing-plans skill to implement this plan."
+**Announce at start:** "I'm using orbit-executing to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use orbit-subagent-dev instead of this skill.
+**Execution-only role:** orbit-executing performs Build tasks for orbit-build, but it does not own the Orbit phase transition. It must return a final Build result to orbit-build, which decides whether to advance `.orbit/state.yaml` from `build` to `review`.
+
+**Orbit skill preference:** When Orbit provides a suitable skill, prefer the Orbit namespaced skill. Use generic skills only when no suitable `orbit-*` skill exists or the Orbit skill is unavailable.
+
+**Execution artifact root:** Store progress, task reports, and Build notes under:
+
+```text
+.orbit/changes/<change-name>/execution/
+```
+
+Do not use `plan.md` as the execution ledger.
+
+**Selection note:** If orbit-build has already selected orbit-executing for a small or tightly coupled plan, follow that choice. Prefer orbit-subagent-dev only when you are choosing an execution strategy outside orbit-build and subagent support is available.
 
 ## The Process
 
@@ -26,17 +38,24 @@ Load plan, review critically, execute all tasks, report when complete.
 ### Step 2: Execute Tasks
 
 For each task:
-1. Mark as in_progress
+1. Mark as in_progress in the execution ledger under `.orbit/changes/<change-name>/execution/`
 2. Follow each step exactly (plan has bite-sized steps)
 3. Run verifications as specified
-4. Mark as completed
+4. Write task-specific notes/reports into the same `execution/` directory
+5. Mark as completed in the execution ledger
 
-### Step 3: Complete Development
+### Step 3: Return Build Result
 
-After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use orbit-finishing
-- Follow that skill to verify tests, present options, execute choice
+After all tasks complete and verification passes:
+- Write or update `build-summary.md` in the active change's `execution/` directory
+- Return one of these final Build results to orbit-build:
+  - `COMPLETE`
+  - `COMPLETE_WITH_CONCERNS`
+  - `BLOCKED`
+- Do **not** update `.orbit/state.yaml` yourself
+- Do **not** mark plan checkboxes or append completion notes to `plan.md`
+
+orbit-build will use your execution artifacts to decide whether to advance the workflow to the Review phase.
 
 ## When to Stop and Ask for Help
 
@@ -60,13 +79,21 @@ After all tasks complete and verified:
 - Review plan critically first
 - Follow plan steps exactly
 - Don't skip verifications
-- Reference skills when plan says to
+- Reference Orbit skills when Orbit provides the matching capability
 - Stop when blocked, don't guess
 - Never start implementation on main/master branch without explicit user consent
+- Do not treat `plan.md` as the completion ledger
+- When tasks are done, return the Build result to orbit-build instead of finalizing the whole branch yourself
 
 ## Integration
 
 **Required workflow skills:**
-- **orbit-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **orbit-planning** - Creates the plan this skill executes
-- **orbit-finishing** - Complete development after all tasks
+- **orbit-build** - Owns the Build phase and advances Orbit state after execution completes
+
+**Preferred supporting skills:**
+- **orbit-tdd** - Use for TDD when Orbit provides the needed guidance
+- **orbit-verify** - Use for verification when Orbit provides the needed guidance
+
+**Alternative workflow:**
+- **orbit-subagent-dev** - Preferred when subagents are available or tasks are mostly independent

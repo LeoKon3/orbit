@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: task-brief PLAN_FILE TASK_NUMBER [OUTPUT_DIR]" >&2
+}
+
+if [ "$#" -lt 2 ] || [ "$#" -gt 3 ]; then
+  usage
+  exit 2
+fi
+
+PLAN_FILE="$1"
+TASK_NUMBER="$2"
+CHANGE_DIR="$(dirname "$PLAN_FILE")"
+OUTPUT_DIR="${3:-$CHANGE_DIR/execution}"
+
+if [ ! -f "$PLAN_FILE" ]; then
+  echo "ERROR: plan file not found: $PLAN_FILE" >&2
+  exit 1
+fi
+
+case "$TASK_NUMBER" in
+  ''|*[!0-9]*|0)
+    echo "ERROR: task number must be a positive integer" >&2
+    exit 2
+    ;;
+esac
+
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_FILE="$OUTPUT_DIR/task-${TASK_NUMBER}-brief.md"
+
+python3 - "$PLAN_FILE" "$TASK_NUMBER" "$OUTPUT_FILE" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+plan_path = Path(sys.argv[1])
+task_number = int(sys.argv[2])
+out_path = Path(sys.argv[3])
+text = plan_path.read_text()
+
+pattern = re.compile(rf"(?ms)^###\s+Task\s+{task_number}\b.*?(?=^###\s+Task\s+\d+\b|\Z)")
+match = pattern.search(text)
+if not match:
+    print(f"ERROR: Task {task_number} not found in {plan_path}", file=sys.stderr)
+    sys.exit(1)
+
+out_path.write_text(match.group(0).strip() + "\n")
+print(out_path)
+PY
