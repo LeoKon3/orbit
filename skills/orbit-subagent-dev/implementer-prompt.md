@@ -2,17 +2,37 @@
 
 Use this template when dispatching one task implementer.
 
+**IMPORTANT:** Before filling this template, run the task-brief and task-report-path scripts to obtain correct file paths:
+
+```bash
+BRIEF_PATH=$(node skills/orbit-subagent-dev/scripts/task-brief.js plan.md TASK_NUMBER)
+REPORT_PATH=$(node skills/orbit-subagent-dev/scripts/task-report-path.js TASK_NUMBER)
+```
+
+Then fill the template with these paths (not `/tmp` or other ad-hoc locations).
+
 ```text
 You are implementing Task <N> for <project/change name>.
 
 Read this first — it is your requirements, with exact values to use verbatim:
-<task-brief-path>
+<BRIEF_PATH from task-brief.js>
+
+**IMPORTANT - NO GIT COMMITS:**
+- Do NOT run `git commit` or `git add` commands
+- Only implement the code and test it
+- The controller will handle all git operations
+- If your instinct is to commit, write to your report instead
+
+**IMPORTANT - SEQUENTIAL TOOL EXECUTION:**
+- Run heavy tools sequentially, not in parallel
+- Example: run `npm install`, then `tsc`, then `npm test` — not all at once
+- This prevents file system overload, especially in WSL environments
+- Small delays (1-2s) between build/verify steps improve stability
 
 Project constraints:
 - Change type: <feature|bugfix|refactor|docs|workflow>. Preserve this emphasis in implementation and verification.
 - Work directly in <repo-root> on the current working tree unless the user explicitly requested a worktree.
-- Do not commit unless the user explicitly asked for commits.
-- Check git status before editing.
+- Check git status before editing to understand current changes.
 - Preserve existing user changes and avoid unrelated files.
 - Follow the repository's existing style.
 - Follow TDD for behavior changes: write/adjust a test first and watch it fail when practical.
@@ -30,7 +50,7 @@ Context:
 - <interfaces, files, or decisions this task needs that are not in the brief>
 
 Report contract:
-Write your full report to <task-report-path>. Include:
+Write your full report to <REPORT_PATH from task-report-path.js>. Include:
 - files changed
 - tests run with exact commands and results
 - self-review notes

@@ -139,11 +139,23 @@ that implementer. Single-file mechanical fixes also take the cheapest tier.
 - Touches multiple files with integration concerns → standard model
 - Requires design judgment or broad codebase understanding → most capable model
 
+## Execution Pacing
+
+**Between subagent dispatches:** Add a 2-3 second delay to reduce file system pressure, especially in WSL environments:
+
+```bash
+sleep 2
+```
+
+**Rationale:** Gives the file system time to flush writes and reduces concurrent I/O peaks that can crash WSL2's Plan9 protocol. This small delay significantly improves stability on resource-constrained environments without meaningful impact on total execution time.
+
+---
+
 ## Handling Implementer Status
 
 Implementer subagents report one of four statuses. Handle each appropriately:
 
-**DONE:** Generate the review package (`node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]`, from the workspace root — it prints the stable file path it wrote into the active change's `execution/` directory. Use `HEAD` when the task intentionally uses a commit boundary; omit it to package the current working tree diff from `BASE`. Never rely on `HEAD~1`, which silently drops all but the last commit of a multi-commit task), then dispatch the task reviewer with the printed path.
+**DONE:** Generate the review package by calling `node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]` from the workspace root. **The script automatically writes to `.orbit/changes/<change-name>/execution/` (or `.git/sdd/` as fallback) and prints the path** — use the printed path directly, do not create your own review files. Use `HEAD` when the task intentionally uses a commit boundary; omit it to package the current working tree diff from `BASE`. Never rely on `HEAD~1`, which silently drops all but the last commit of a multi-commit task. Pass the printed path to the task reviewer.
 
 **DONE_WITH_CONCERNS:** The implementer completed the work but flagged doubts. Read the concerns before proceeding. If the concerns are about correctness or scope, address them before review. If they're observations (e.g., "this file is getting large"), note them in `build-summary.md` under the active change's `execution/` directory and proceed to review.
 
@@ -165,6 +177,38 @@ review, but you must resolve each one yourself before marking the task
 complete: you hold the plan and cross-task context the reviewer
 lacks. If you confirm an item is a real gap, treat it as a failed spec
 review — send it back to the implementer and re-review.
+
+## Constructing Task Briefs and Reports
+
+**Task briefs and reports must be written to the active change's execution directory.** Use the provided scripts to obtain correct paths — do not construct paths manually.
+
+**For task briefs:**
+
+```bash
+# Generate task brief and get its path
+BRIEF_PATH=$(node skills/orbit-subagent-dev/scripts/task-brief.js plan.md TASK_NUMBER)
+```
+
+The script:
+- Extracts Task N from plan.md
+- Writes to `.orbit/changes/<current-change>/execution/task-N-brief.md`
+- Prints the path to stdout
+- Use the printed path in your implementer dispatch
+
+**For task reports:**
+
+```bash
+# Get the report path for Task N
+REPORT_PATH=$(node skills/orbit-subagent-dev/scripts/task-report-path.js TASK_NUMBER)
+```
+
+The script:
+- Reads `current_change` from `.orbit/state.yaml`
+- Creates `.orbit/changes/<current-change>/execution/` directory
+- Prints `task-N-report.md` path to stdout
+- Pass this path to the implementer in the "Write your full report to:" line
+
+**Never manually construct paths like `/tmp/task-N-brief.md` or ad-hoc filenames.** The scripts ensure consistency and proper directory structure.
 
 ## Constructing Reviewer Prompts
 
@@ -189,7 +233,7 @@ Per-task reviews are task-scoped gates. When you fill a reviewer template:
   project's spec demands.
 - Hand the reviewer its diff as a file: run this skill's
   `node skills/orbit-subagent-dev/scripts/review-package.js BASE [HEAD]` and pass the reviewer the file path
-  it prints from the active change's `execution/` directory. When the task
+  it prints. **The script writes to the active change's `execution/` directory** — use that path, never create review packages manually. When the task
   uses an explicit commit boundary, provide `HEAD`; otherwise omit it so the
   package captures the current working tree diff from `BASE`. The output never
   enters your own context, and the reviewer sees the commit list, stat
@@ -272,6 +316,18 @@ an execution ledger file, not only in todos.
   final Build result (`COMPLETE`, `COMPLETE_WITH_CONCERNS`, or `BLOCKED`) to
   orbit-build, and stop. Do not wait for the user to say "continue", and do
   not advance `.orbit/state.yaml` yourself.
+
+## Subagent Safety Constraints
+
+**When dispatching implementer or reviewer subagents using the Agent tool:**
+
+Ensure git operations are restricted in the subagent prompt. The implementer-prompt.md template already includes the `IMPORTANT - NO GIT COMMITS` section. Reinforce this by:
+
+1. **Explicitly stating in every dispatch:** The subagent prompt must include the "NO GIT COMMITS" constraint
+2. **Double-checking project deny rules:** If the project has `.claude/settings.json` with git deny rules, subagents inherit them. If using `.claude/settings.local.json` only, subagents may not inherit those rules.
+3. **Fallback enforcement:** The implementer prompt's explicit "NO GIT COMMITS" instruction is the primary safeguard regardless of settings inheritance
+
+**Why this matters:** Subagent processes may not inherit all local settings. The prompt-level constraint ensures consistent behavior across all execution environments (local, WSL, remote).
 
 ## Prompt Templates
 

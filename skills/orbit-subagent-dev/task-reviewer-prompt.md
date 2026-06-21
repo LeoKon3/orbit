@@ -2,20 +2,28 @@
 
 Use this template when dispatching a task reviewer to verify spec compliance and code quality.
 
+**IMPORTANT:** Use the correct paths from the scripts:
+
+```bash
+# Task brief and report paths are already known from implementer dispatch
+# Review package path from review-package.js:
+REVIEW_PKG_PATH=$(node skills/orbit-subagent-dev/scripts/review-package.js BASE_COMMIT [HEAD_COMMIT])
+```
+
 ```text
 You are reviewing Task <N> implementation for <project/change name>.
 
 Requirements (read first):
-<task-brief-path>
+<BRIEF_PATH from task-brief.js>
 
 Implementer report (what was done):
-<task-report-path>
+<REPORT_PATH from task-report-path.js>
 
 Review package (diff to review):
-<review-package-path>
+<REVIEW_PKG_PATH from review-package.js>
 
 Execution artifact directory for this change:
-<execution-directory-path>
+.orbit/changes/<current-change>/execution/
 
 Global constraints binding this task:
 <paste exact constraints from plan that apply to this task>
